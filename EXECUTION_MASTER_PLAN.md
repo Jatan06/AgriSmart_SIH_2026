@@ -40,21 +40,27 @@ Every other team will use the basic PlantVillage dataset (lab conditions, clean 
 
 ## Phase 1: ML Core Scaffolding & Training
 
-**Assignee:** Ayush (Major Workload)
-
 ### 1.1 `augmentations.py`
+**Assignee:** Jatan (Isolated Workload)
+
 *   **Action:** Implement Albumentations pipelines (`get_train_transforms` and `get_val_transforms`).
 *   **Details:** Must include `RandomSunFlare` (simulates field glare), `ISONoise` (simulates cheap phone cameras), and `MotionBlur` (simulates shaky farmer hands).
 
 ### 1.2 `dataset.py`
+**Assignee:** Jatan (Isolated Workload)
+
 *   **Action:** Implement a custom PyTorch `Dataset` class.
 *   **Details:** Must dynamically read folder names to assign class indices. It must never hardcode the number of classes.
 
 ### 1.3 `model.py`
+**Assignee:** Ayush (Major Workload)
+
 *   **Action:** Implement `build_model()`.
 *   **Details:** Use `timm.create_model('convnextv2_base', pretrained=True)`. *Fallback:* If Kaggle runs out of VRAM, switch to `convnextv2_tiny`.
 
 ### 1.4 `train.py`
+**Assignee:** Ayush (Major Workload)
+
 *   **Action:** Implement the training loop.
 *   **Critical Specs:** 
     *   Hardcode `batch_size=16` to prevent Out-Of-Memory (OOM) errors.
@@ -62,7 +68,15 @@ Every other team will use the basic PlantVillage dataset (lab conditions, clean 
     *   Initialize `wandb.init()` for experiment tracking.
     *   Dynamically write `class_names.json` to disk during training based on `os.listdir(DATASET_ROOT)`.
 
-### 1.5 `export.py` & `predict.py`
+### 1.5 `export.py`
+**Assignee:** Ayush (Major Workload)
+*   **Action:** Convert the trained PyTorch model to ONNX.
+*   **Critical Specs:** 
+    *   You MUST call `model.eval()` before exporting to ONNX.
+
+### 1.6 `predict.py`
+**Assignee:** Jatan (Isolated Workload)
+
 *   **Action:** Convert the trained PyTorch model to ONNX.
 *   **Critical Specs:** 
     *   You MUST call `model.eval()` before exporting to ONNX, otherwise Batch Normalization will corrupt the predictions.
@@ -72,7 +86,7 @@ Every other team will use the basic PlantVillage dataset (lab conditions, clean 
 
 ## Phase 2: FastAPI Backend & AI Agents
 
-**Assignee:** Jatan (Isolated Workload)
+**Assignee:** Currently Unassigned (To be delegated after ML is finished)
 
 ### 2.1 `inference.py` (ONNX Wrapper)
 *   **Action:** Write the ONNX session runner.
@@ -96,7 +110,7 @@ Every other team will use the basic PlantVillage dataset (lab conditions, clean 
 
 ## Phase 3: Next.js PWA Frontend
 
-**Assignee:** Jatan (Isolated Workload)
+**Assignee:** Currently Unassigned (To be delegated after ML is finished)
 
 ### 3.1 PWA Configuration
 *   **Action:** Configure `next-pwa` in `next.config.mjs`.
