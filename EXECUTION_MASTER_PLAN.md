@@ -77,10 +77,11 @@ Every other team will use the basic PlantVillage dataset (lab conditions, clean 
 ### 1.6 `predict.py`
 **Assignee:** Jatan (Isolated Workload)
 
-*   **Action:** Convert the trained PyTorch model to ONNX.
+*   **Action:** Write a standalone script that runs the ONNX model.
 *   **Critical Specs:** 
-    *   You MUST call `model.eval()` before exporting to ONNX, otherwise Batch Normalization will corrupt the predictions.
-    *   `predict.py` must use `__file__`-relative paths so it doesn't crash when judges run it from different directories.
+    *   **Independence:** This script must not import anything from `train.py` or FastAPI. It must run 100% locally from the command line.
+    *   **Pathing:** It must use `os.path.dirname(__file__)` to find `class_names.json` and `best_model.onnx` so it doesn't crash regardless of where the judge runs it from.
+    *   **Preprocessing:** Must exactly match the normalization values from `augmentations.py`.
 
 ---
 
