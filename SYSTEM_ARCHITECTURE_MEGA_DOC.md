@@ -264,10 +264,11 @@ def build_dataset(dataset_root: str):
     2. Determines num_classes: `num_classes = len(json.load(open("model/class_names.json")))` — never hardcode this value.
     3. Calls `build_model(num_classes=num_classes)`.
     4. Initializes `AdamW` optimizer with `lr=1e-4` and `CosineAnnealingLR`.
-    5. Freezes backbone, runs `train_epoch` and `validate_epoch` for 3 epochs.
-    6. Unfreezes backbone, runs for 12 more epochs (Kaggle P100/T4 recommended).
-    7. Saves `best_model.pth` based on highest `macro_f1`.
-    8. **Auto-generates `class_names.json`** by scanning `DATASET_ROOT` folder names (see Section 5 Directory Structure rule).
+    5. **`batch_size=16` — hardcode this. Do not increase. convnextv2_base at 224x224 will OOM on Kaggle P100/T4 above batch_size=32, and 16 gives stable gradients.**
+    6. Freezes backbone, runs `train_epoch` and `validate_epoch` for 3 epochs.
+    7. Unfreezes backbone, runs for 12 more epochs (Kaggle P100/T4 recommended).
+    8. Saves `best_model.pth` based on highest `macro_f1`.
+    9. **Auto-generates `class_names.json`** by scanning `DATASET_ROOT` folder names (see Section 5 Directory Structure rule).
 
 ### 5.5 `export.py` (Bridging ML to Backend)
 
@@ -277,8 +278,9 @@ def build_dataset(dataset_root: str):
     1.  Loads `num_classes = len(json.load(open("model/class_names.json")))` — never hardcode.
     2.  Loads `model = build_model(num_classes=num_classes)`.
     3.  Loads `best_model.pth` state dict into model.
-    4.  Creates a dummy tensor: `dummy_input = torch.randn(1, 3, 224, 224)`.
-    5.  Calls `torch.onnx.export(model, dummy_input, output_path, opset_version=17, input_names=['input'], output_names=['output'], dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}})`
+    4.  **`model.eval()` — MANDATORY before export.** Without this, BatchNorm runs in training mode and the exported weights produce wrong predictions. Silent bug — no crash, just bad outputs.
+    5.  Creates a dummy tensor: `dummy_input = torch.randn(1, 3, 224, 224)`.
+    6.  Calls `torch.onnx.export(model, dummy_input, output_path, opset_version=17, input_names=['input'], output_names=['output'], dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}})`
 
 ### 5.6 `predict.py` (The Judges' Interface)
 
@@ -300,11 +302,16 @@ img  = img.astype(np.float32)
 *   **Logic:**
     1. Uses `argparse` to read `--image`.
     2. Calls `preprocess_image()`.
-    3. Loads `CLASS_NAMES = json.load(open("model/class_names.json"))`.
-    4. Loads ONNX model via `onnxruntime.InferenceSession("model/best_model.onnx")`.
-    5. Runs `session.run(["output"], {"input": image_tensor})`.
-    6. Gets `argmax` and maps to `CLASS_NAMES[argmax]`.
-    7. `print(disease_string)` — zero extra output, nothing else.
+    3. **Path resolution — use `__file__`-relative paths so the script works regardless of which directory the evaluator runs it from:**
+```python
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CLASS_NAMES = json.load(open(os.path.join(BASE_DIR, "class_names.json")))
+session = onnxruntime.InferenceSession(os.path.join(BASE_DIR, "best_model.onnx"))
+```
+    4. Runs `session.run(["output"], {"input": image_tensor})`.
+    5. Gets `argmax` and maps to `CLASS_NAMES[argmax]`.
+    6. `print(disease_string)` — zero extra output, nothing else.
 
 ---
 
@@ -314,13 +321,36 @@ img  = img.astype(np.float32)
 
 ### `main.py` (Routing)
 *   **Initialization:** `app = FastAPI(lifespan=lifespan)`. The `lifespan` context manager loads the `onnxruntime.InferenceSession` exactly once at startup to prevent 2-second delays on every API call.
+*   **CORS — add this immediately after `app` is created (without this, browser blocks all frontend requests on Day 1):**
+```python
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # exact origin, not wildcard
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
 *   **Route:** `@app.post("/api/v1/detect")`
 
 ### `inference.py` (ONNX Wrapper)
 *   **Function:** `def run_onnx_inference(session, image_bytes: bytes) -> dict:`
 *   **Exact Preprocessing Logic (MUST be identical to `predict.py` — copy-paste this block):**
 ```python
-CLASS_NAMES = json.load(open("model/class_names.json"))
+import os, json, io
+import numpy as np
+from PIL import Image
+
+# __file__-relative path — works regardless of which directory caller is in
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+CLASS_NAMES = json.load(open(os.path.join(BASE_DIR, "..", "model", "class_names.json")))
+
+# Numerically stable softmax — MUST be defined here, do not import from elsewhere
+def softmax(x):
+    e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return e_x / e_x.sum(axis=-1, keepdims=True)
+
 mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 std  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 img  = np.array(Image.open(io.BytesIO(image_bytes)).convert("RGB").resize((224, 224))) / 255.0
@@ -328,7 +358,7 @@ img  = (img - mean) / std
 img  = img.transpose(2, 0, 1)   # HWC → CHW
 img  = np.expand_dims(img, 0)   # → (1, 3, 224, 224)
 img  = img.astype(np.float32)
-outputs = session.run(["output"], {"input": img})[0]
+outputs    = session.run(["output"], {"input": img})[0]
 confidence = float(softmax(outputs)[0].max())
 class_idx  = int(outputs[0].argmax())
 disease    = CLASS_NAMES[class_idx]
@@ -373,6 +403,16 @@ severity   = "High" if confidence > 0.85 else "Medium" if confidence > 0.60 else
         ```
     *   **Environment:** Load API key via `os.getenv("GEMINI_API_KEY")`. See Section 8.
     *   Uses `google.generativeai`. Passes a strict `pydantic.BaseModel` to the `response_schema` parameter to enforce the JSON structure defined in Section 4.
+    *   **Gemini Fallback (MANDATORY — prevents full request failure on rate-limit):**
+        Wrap the Gemini call in `try/except`. On any exception, do NOT raise a 500. Instead return:
+        ```python
+        {"headline": "AI Advisor temporarily unavailable.",
+         "action_steps": ["ML diagnosis is complete and accurate.", "Agronomist advice will be available shortly."],
+         "sustainability_impact": None,
+         "translated_message": None,
+         "agent_status": "unavailable"}
+        ```
+        The frontend renders this as a soft warning, NOT an error. The ML result and weather data still display fully.
 
 ---
 
