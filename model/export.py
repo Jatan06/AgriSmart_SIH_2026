@@ -1,5 +1,5 @@
 import torch
-from ml_core.model import build_model
+from model.model import build_model
 import os
 import json
 
