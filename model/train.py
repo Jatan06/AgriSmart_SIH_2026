@@ -46,9 +46,9 @@ def train():
     train_dataset = AgriDataset(train_paths, train_labels, get_train_transforms())
     val_dataset = AgriDataset(val_paths, val_labels, get_val_transforms())
 
-    batch_size = 16 # Hardcoded per protocol to prevent Kaggle Out-Of-Memory
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    batch_size = 32 # Hardcoded per protocol to prevent Kaggle Out-Of-Memory
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
     
     # Initialize Weights & Biases (wandb) for tracking
     import os\nos.environ["WANDB_MODE"] = "disabled"\n    wandb.init(project="agrismart-sih", config={"batch_size": batch_size, "epochs": 15})
@@ -64,6 +64,7 @@ def train():
     optimizer = optim.AdamW(model.parameters(), lr=1e-4)
     
     best_f1 = 0.0
+    scaler = torch.amp.GradScaler(device="cuda")
 
     print(f"\n[Training Started] Training on {len(train_paths)} images, Validating on {len(val_paths)} images across {num_classes} classes.")
     for epoch in range(epochs):
@@ -75,10 +76,12 @@ def train():
             images, targets = images.to(device), targets.to(device)
             
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
+            with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
+                outputs = model(images)
+                loss = criterion(outputs, targets)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             
             train_loss += loss.item()
             loop.set_description(f"Epoch [{epoch+1}/{epochs}]")
