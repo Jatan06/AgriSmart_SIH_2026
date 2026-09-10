@@ -80,6 +80,11 @@ def train():
                 outputs = model(images)
                 loss = criterion(outputs, targets)
             scaler.scale(loss).backward()
+            
+            # Unscale the gradients before clipping to prevent math explosion
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            
             scaler.step(optimizer)
             scaler.update()
             
