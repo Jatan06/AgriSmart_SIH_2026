@@ -64,7 +64,6 @@ def train():
     optimizer = optim.AdamW(model.parameters(), lr=1e-4)
     
     best_f1 = 0.0
-    scaler = torch.amp.GradScaler(device="cuda")
 
     print(f"\n[Training Started] Training on {len(train_paths)} images, Validating on {len(val_paths)} images across {num_classes} classes.")
     for epoch in range(epochs):
