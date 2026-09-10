@@ -51,7 +51,7 @@ def train():
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
     
     # Initialize Weights & Biases (wandb) for tracking
-    wandb.init(project="agrismart-sih", config={"batch_size": batch_size, "epochs": 15})
+    import os\nos.environ["WANDB_MODE"] = "disabled"\n    wandb.init(project="agrismart-sih", config={"batch_size": batch_size, "epochs": 15})
     
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
