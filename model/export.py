@@ -21,7 +21,7 @@ def export_model():
     model = build_model(num_classes=num_classes)
     
     # Check if a trained weights file exists
-    weights_path = "saved_models/best_model.pth"
+    weights_path = "saved_models/best_model_84.pth"
     if os.path.exists(weights_path):
         print(f"Loading trained weights from {weights_path}...")
         model.load_state_dict(torch.load(weights_path, map_location=device))
