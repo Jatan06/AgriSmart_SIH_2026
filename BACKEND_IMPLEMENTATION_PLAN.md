@@ -226,8 +226,12 @@ GEMINI_FALLBACK = {
         "ML diagnosis is complete and accurate.",
         "Agronomist advice will be available shortly.",
     ],
-    "sustainability_impact": None,
-    "translated_message": None,
+    "sustainability_impact": {
+        "water_saved_liters_per_acre": 0,
+        "chemical_reduction_percent": 0,
+        "methodology_note": "Unavailable"
+    },
+    "translated_message": "AI Advisor temporarily unavailable.",
     "agent_status": "unavailable",
 }
 
@@ -298,6 +302,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.concurrency import run_in_threadpool
 
 from api.inference import load_model, run_inference
 from api.services import fetch_weather, generate_agent_advice
@@ -345,24 +350,20 @@ async def detect_disease(
     # 1. Read the uploaded image bytes
     image_bytes = await image.read()
 
-    # 2. Run ML inference (synchronous, ~0.5s on CPU)
-    ml_result = run_inference(image_bytes)
+    # 2. Run ML inference in a threadpool to prevent blocking the async event loop
+    ml_result = await run_in_threadpool(run_inference, image_bytes)
 
-    # 3. Fetch weather and Gemini advice concurrently
-    weather_task = fetch_weather(lat, lon)
-    agent_task = generate_agent_advice(ml_result, {"temperature_c": 0, "humidity": 0, "rain_probability": 0}, language)
-
-    # We need the weather data before calling Gemini properly,
-    # so fetch weather first, then call Gemini with the real weather data
+    # 3. Fetch weather
     try:
         weather_data = await fetch_weather(lat, lon)
     except Exception as e:
         print(f"[main] Weather fetch failed: {e}")
         weather_data = {"temperature_c": 0, "humidity": 0, "rain_probability": 0}
 
+    # 4. Fetch Gemini advice using the weather data
     agent_advice = await generate_agent_advice(ml_result, weather_data, language)
 
-    # 4. Return the combined response (matches SYSTEM_ARCHITECTURE_MEGA_DOC.md §4)
+    # 5. Return the combined response (matches SYSTEM_ARCHITECTURE_MEGA_DOC.md §4)
     return {
         "success": True,
         "ml_result": ml_result,
@@ -383,7 +384,7 @@ source venv/bin/activate
 uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The first time you run this, `timm` will download the ConvNeXt-V2 base architecture (~355MB) from HuggingFace. This is a one-time cache. After that, startup takes ~5 seconds.
+Startup takes ~2-5 seconds while ONNX loads the 335MB weights file into memory. Since this uses ONNX Runtime (not PyTorch/timm), there are no HuggingFace downloads or extra cache folders.
 
 ---
 
@@ -442,4 +443,4 @@ Use any `.jpg` or `.png` image of a leaf. There is a `leaf.jpg` already in the p
 4. **Do not forget CORS.** Without the middleware in `main.py`, every single request from the Next.js frontend will be silently blocked by the browser with zero error messages in the Network tab.
 5. **Do not put `api/.env` in git.** It is already in `.gitignore`. If you accidentally commit it, immediately rotate the Gemini API key.
 6. **The model weights file is 335MB.** It is gitignored. Get it from the Google Drive link Ayush sends.
-7. **`train.py` has a known bug on line 54 and line 78-88.** It references `scaler` (AMP GradScaler) that is never defined, and line 54 has a broken escape sequence. This does not affect the backend at all — `train.py` is only used in Colab for training. Do not try to fix it unless you are Jatan.
+7. **Do not use `train.py` or `dataset.py`.** These are for ML training in Colab only and should not be imported or run by the backend.
