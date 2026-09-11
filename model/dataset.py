@@ -1,7 +1,8 @@
 import os
 import json
-import cv2
+import numpy as np
 import torch
+from PIL import Image
 from torch.utils.data import Dataset
 import albumentations as A
 
@@ -31,9 +32,10 @@ class AgriDataset(Dataset):
         image_path = self.image_paths[idx]
         label = self.labels[idx]
 
-        # Read image from disk — OpenCV loads as BGR by default.
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # Read image via PIL — identical decoder to predict.py and api/inference.py.
+        # DO NOT switch back to cv2. cv2 and PIL use different JPEG decoders,
+        # producing pixel-level differences that shift the model's input distribution.
+        image = np.array(Image.open(image_path).convert("RGB"))
 
         # Apply the albumentations pipeline (augmentation + normalisation + ToTensorV2).
         augmented = self.transforms(image=image)

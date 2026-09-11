@@ -24,7 +24,7 @@ from PIL import Image
 # This guarantees the script works no matter where the judge invokes it from.
 _MODEL_DIR = os.path.dirname(os.path.abspath(__file__))
 _CLASS_NAMES_PATH = os.path.join(_MODEL_DIR, "class_names.json")
-_ONNX_MODEL_PATH = os.path.join(_MODEL_DIR, "best_model.onnx")
+_ONNX_MODEL_PATH = os.path.join(_MODEL_DIR, "agrismart_model.onnx")
 
 
 def preprocess_image(image_path: str) -> np.ndarray:
@@ -54,6 +54,29 @@ def preprocess_image(image_path: str) -> np.ndarray:
     return img
 
 
+def predict(image_path: str) -> str:
+    """
+    Top-level callable Python API required by SIH PDF Section 4.1.
+
+    This function can be imported and called directly by automated evaluation
+    scripts:
+        from model.predict import predict
+        label = predict("path/to/leaf.jpg")
+
+    Args:
+        image_path: Absolute or relative path to the input image.
+
+    Returns:
+        The predicted disease class name string (e.g. 'Tomato_Early_blight').
+    """
+    class_names = json.load(open(_CLASS_NAMES_PATH))
+    session = onnxruntime.InferenceSession(_ONNX_MODEL_PATH)
+    tensor = preprocess_image(image_path)
+    outputs = session.run(["output"], {"input": tensor})[0]
+    predicted_idx = int(np.argmax(outputs[0]))
+    return class_names[predicted_idx]
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="AgriSmart AI — standalone crop disease predictor."
@@ -66,11 +89,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    CLASS_NAMES = json.load(open(_CLASS_NAMES_PATH))
-    session = onnxruntime.InferenceSession(_ONNX_MODEL_PATH)
-
-    image_tensor = preprocess_image(args.image)
-    outputs = session.run(["output"], {"input": image_tensor})[0]
-
-    class_idx = int(outputs[0].argmax())
-    print(CLASS_NAMES[class_idx])
+    print(predict(args.image))

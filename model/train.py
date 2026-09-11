@@ -1,5 +1,7 @@
 import os
 import json
+import random
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,6 +14,16 @@ from model.dataset import build_dataset, AgriDataset
 from model.augmentations import get_train_transforms, get_val_transforms
 import torch.nn.functional as F
 from sklearn.metrics import f1_score
+
+
+def set_seed(seed: int = 42):
+    """Lock all random seeds for reproducibility (SIH requirement)."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 # Focal Loss Implementation to handle rare vs common diseases
 class FocalLoss(nn.Module):
@@ -27,6 +39,7 @@ class FocalLoss(nn.Module):
         return focal_loss.mean()
 
 def train():
+    set_seed(42)  # Lock seeds first before any tensor/data ops
     DATASET_ROOT = "final_dataset/train"
     SAVED_MODELS_DIR = "saved_models"
     os.makedirs(SAVED_MODELS_DIR, exist_ok=True)
@@ -51,14 +64,18 @@ def train():
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
     
     # Initialize Weights & Biases (wandb) for tracking
-    import os\nos.environ["WANDB_MODE"] = "disabled"\n    wandb.init(project="agrismart-sih", config={"batch_size": batch_size, "epochs": 15})
+    os.environ["WANDB_MODE"] = "disabled"
+    wandb.init(project="agrismart-sih", config={"batch_size": batch_size, "epochs": 15})
     
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Using device: {device}")
     
     model = build_model(num_classes=num_classes)
     model.to(device)
-    
+
+    # GradScaler for AMP mixed precision — MUST be defined before training loop
+    scaler = torch.cuda.amp.GradScaler(enabled=(device.type == "cuda"))
+
     epochs = 15     # As requested by user
     criterion = FocalLoss(alpha=0.25, gamma=2.0)
     optimizer = optim.AdamW(model.parameters(), lr=1e-4)
