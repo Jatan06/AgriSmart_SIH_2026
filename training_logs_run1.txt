@@ -1,0 +1,12 @@
+Epoch [1/15]: 100% 2526/2526 [16:15<00:00,  2.59it/s, loss=0.00312]
+Epoch 1 - Train Loss: 0.0488 | Val Loss: 0.0149 | Macro F1: 0.8392
+--> Saved New Best Model!
+
+Epoch [2/15]: 100% 2526/2526 [15:33<00:00,  2.71it/s, loss=0.327]
+Epoch 2 - Train Loss: 0.1204 | Val Loss: 0.1409 | Macro F1: 0.5510
+
+Epoch [3/15]: 100% 2526/2526 [15:32<00:00,  2.71it/s, loss=0.836]
+Epoch 3 - Train Loss: 0.7251 | Val Loss: 0.8558 | Macro F1: 0.0062
+
+Epoch [4/15]: 100% 2526/2526 [15:33<00:00,  2.71it/s, loss=0.993]
+Epoch 4 - Train Loss: 0.8613 | Val Loss: 0.8611 | Macro F1: 0.0023

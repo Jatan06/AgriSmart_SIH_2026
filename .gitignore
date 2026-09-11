@@ -87,3 +87,10 @@ Desktop.ini
 # =============================================================================
 *.log
 logs/
+datasets/
+final_dataset/
+SAVED_MODELS_DIR/
+saved_models/
+venv/
+__pycache__/
+*.zip
