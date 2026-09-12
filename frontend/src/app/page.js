@@ -8,25 +8,12 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import HeroSection from "@/components/HeroSection";
+import DashboardGrid from "@/components/DashboardGrid";
 
 const LoadingOverlayPlaceholder = () => (
   <div className="flex flex-col items-center justify-center min-h-screen space-y-4 bg-background z-50 fixed inset-0">
     <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
     <h2 className="text-2xl font-heading animate-pulse text-foreground">Analyzing Plant Health...</h2>
-  </div>
-);
-
-const DashboardPlaceholder = ({ data, onReset }) => (
-  <div className="min-h-screen p-8 bg-background">
-    <div className="flex justify-between items-center mb-8 max-w-5xl mx-auto mt-12">
-      <h1 className="text-4xl font-heading text-foreground font-bold">Diagnosis Complete</h1>
-      <Button onClick={onReset}>← Analyze Another</Button>
-    </div>
-    <div className="max-w-5xl mx-auto">
-      <pre className="bg-card p-6 rounded-xl border border-border text-sm overflow-auto text-card-foreground shadow-sm">
-        {JSON.stringify(data, null, 2)}
-      </pre>
-    </div>
   </div>
 );
 
@@ -97,7 +84,7 @@ export default function Home() {
       )}
 
       {appStatus === "success" && (
-        <DashboardPlaceholder data={apiData} onReset={handleReset} />
+        <DashboardGrid data={apiData} onReset={handleReset} />
       )}
       
     </main>
