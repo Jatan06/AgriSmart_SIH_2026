@@ -25,11 +25,11 @@ export default function HeroSection({ onAnalyze }) {
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-20 w-full max-w-5xl mx-auto px-6 pt-24 text-center">
-        <h1 className="text-5xl md:text-7xl font-heading text-white font-bold mb-6 drop-shadow-xl">
-          Instantly Diagnose Your Crops
+      <div className="relative z-20 w-full max-w-6xl mx-auto px-6 pt-32 text-center flex flex-col items-center">
+        <h1 className="text-6xl md:text-8xl font-heading text-[#FCFCF7] font-medium tracking-tight mb-8 drop-shadow-2xl">
+          Instantly Diagnose<br/>Your Crops
         </h1>
-        <p className="text-xl md:text-2xl text-white/90 font-sans mb-12 max-w-3xl mx-auto font-light drop-shadow-md">
+        <p className="text-xl md:text-2xl text-[#FCFCF7]/80 font-sans mb-14 max-w-2xl font-light leading-relaxed tracking-wide">
           Upload a clear photo of a diseased leaf and our AI will provide an immediate diagnosis and an actionable, weather-aware treatment plan.
         </p>
 

@@ -1,10 +1,13 @@
+import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Leaf, CloudRain, ShieldAlert, Droplets, CheckCircle, ArrowLeft } from "lucide-react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 
 const DiseaseCard = ({ mlResult }) => (
-  <Card className="col-span-1 border-primary/20 shadow-md">
+  <Card className="dashboard-card col-span-1 border-primary/20 shadow-md">
     <CardHeader className="bg-primary/5 pb-4">
       <CardTitle className="flex items-center text-xl font-heading text-primary">
         <Leaf className="w-5 h-5 mr-2" />
@@ -37,7 +40,7 @@ const DiseaseCard = ({ mlResult }) => (
 );
 
 const WeatherCard = ({ weather }) => (
-  <Card className="col-span-1 border-border shadow-sm">
+  <Card className="dashboard-card col-span-1 border-border shadow-sm">
     <CardHeader className="pb-4">
       <CardTitle className="flex items-center text-lg font-heading">
         <CloudRain className="w-5 h-5 mr-2 text-blue-500" />
@@ -62,7 +65,7 @@ const WeatherCard = ({ weather }) => (
 );
 
 const AgentPlanCard = ({ advice }) => (
-  <Card className="col-span-1 lg:col-span-2 border-primary/20 shadow-lg bg-card/50 backdrop-blur-sm">
+  <Card className="dashboard-card col-span-1 lg:col-span-2 border-primary/20 shadow-lg bg-card/50 backdrop-blur-sm">
     <CardHeader className="bg-primary/10 border-b border-primary/10">
       <CardTitle className="flex items-center text-2xl font-heading text-primary">
         <ShieldAlert className="w-6 h-6 mr-2" />
@@ -95,7 +98,7 @@ const AgentPlanCard = ({ advice }) => (
 );
 
 const GreenImpactCard = ({ impact }) => (
-  <Card className="col-span-1 lg:col-span-2 border-green-700/20 shadow-md bg-gradient-to-br from-green-50 to-emerald-50/20">
+  <Card className="dashboard-card col-span-1 lg:col-span-2 border-green-700/20 shadow-md bg-gradient-to-br from-green-50 to-emerald-50/20">
     <CardContent className="pt-6">
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex-1">
@@ -121,10 +124,22 @@ const GreenImpactCard = ({ impact }) => (
 );
 
 export default function DashboardGrid({ data, onReset }) {
+  const container = useRef(null);
+
+  useGSAP(() => {
+    gsap.from(".dashboard-card", {
+      y: 50,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.15,
+      ease: "power3.out",
+    });
+  }, { scope: container });
+
   if (!data) return null;
 
   return (
-    <div className="min-h-screen bg-[#F5F3ED] py-12 px-6">
+    <div ref={container} className="min-h-screen bg-background py-12 px-6">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
@@ -133,7 +148,7 @@ export default function DashboardGrid({ data, onReset }) {
             <h1 className="text-4xl font-heading font-bold text-foreground mb-2">Analysis Results</h1>
             <p className="text-muted-foreground">Generated instantly by AgriSmart AI</p>
           </div>
-          <Button onClick={onReset} variant="outline" className="shadow-sm">
+          <Button onClick={onReset} variant="outline" className="shadow-sm hover:scale-105 transition-transform">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Analyze Another
           </Button>
