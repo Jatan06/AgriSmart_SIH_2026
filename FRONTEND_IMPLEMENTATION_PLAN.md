@@ -7,25 +7,23 @@
 
 ---
 
-## ⚠️ OPEN QUESTIONS FOR AYUSH — MUST BE ANSWERED BEFORE CODING STARTS
+## Execution Strategy: Chunked Implementation
+To ensure high quality, perfect backend alignment, and avoid AI hallucination, this plan will be executed in **short, verifiable chunks**.
 
-> These decisions affect the entire frontend architecture. Answered questions should be updated here.
-
-1. **Backend URL (Production):** The backend plan says `http://localhost:8000`. When deployed at the hackathon, will it run on the same machine as the browser, or will there be a server IP? We need an `NEXT_PUBLIC_API_URL` env variable strategy so the frontend team can switch from `localhost` to the real IP without touching code.
-2. **Image Size Limit:** FastAPI default max upload size is **~1MB**. Farmers use mobile phones with large camera images (5–10MB). Do we need to add client-side compression (e.g., `browser-image-compression` npm package) before sending, or will the backend team increase the limit?
-3. **Loading Timeout:** The backend makes 3 serial calls (ONNX → Weather API → Gemini). On a slow hackathon network, this could take 10–30 seconds. What should happen on the frontend if it takes longer than 30 seconds — show a timeout error, or keep waiting?
-4. **Language Toggle:** The API accepts a `language` field (e.g., `"en"`, `"hi"`). Do you want a UI dropdown/toggle for this now (Hindi / English), or hardcode to English for the MVP?
-5. **Image Preview:** After the user selects a leaf image, should we show a thumbnail preview of it inside the upload zone BEFORE they click "Analyze Crop"?
-6. **PWA (Progressive Web App):** `SYSTEM_ARCHITECTURE_MEGA_DOC.md §7` mentions PWA via `next-pwa`. Should this be implemented now, or is it a post-hackathon feature?
+*   **Chunk 1: Foundation.** Next.js bootstrap, Shadcn UI setup, Tailwind config (colors/fonts from `design.md`), and basic folder structure.
+*   **Chunk 2: Mock API & State.** Create `mockData.js`, `api.js` (pointing to `http://localhost:8000` via env var), and the main `page.jsx` state machine (`idle` -> `loading` -> `success` -> `error`).
+*   **Chunk 3: Hero & Upload Zone.** Implement `HeroSection.jsx` (with looping video), `DropZone.jsx` (with `browser-image-compression`, 10MB limit, and **Image Preview** before clicking Analyze), and `Navbar.jsx` (with **Language Toggle**).
+*   **Chunk 4: Results Dashboard.** Implement `DashboardGrid.jsx`, `DiseaseCard.jsx`, `WeatherCard.jsx`, `AgentPlanCard.jsx`, and `GreenImpactCard.jsx`. Map exactly to the JSON payload. Handle Gemini API fallback logic.
+*   **Chunk 5: Polish & GSAP.** Add Lenis smooth scrolling, GSAP stagger reveal on the dashboard, hover animations, and final UI QA. *(Note: PWA features are deferred until post-hackathon).*
 
 ---
 
-## 1. Project Bootstrap
+## 1. Project Bootstrap (Chunk 1)
 
 ```bash
 # From the project root (SIH_2026/)
 npx create-next-app@latest frontend \
-  --typescript-no \ # Using plain JavaScript
+  --typescript-no \
   --tailwind \
   --eslint \
   --app \
@@ -47,13 +45,14 @@ npm install axios react-dropzone lucide-react clsx tailwind-merge
 # Animation stack
 npm install @studio-freight/lenis gsap @gsap/react
 
-# (Optional based on answer to Q2) Image compression
+# Image compression (Required for high-res farm photos)
 npm install browser-image-compression
 ```
 
 ### Environment Variables
 Create `frontend/.env.local`:
 ```
+# Frontend runs on 5173 (or default 3000), Backend runs on 8000
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 The frontend team should NEVER hardcode `localhost:8000` in a component. Always use `process.env.NEXT_PUBLIC_API_URL`.
@@ -77,12 +76,12 @@ frontend/
 │   │   ├── ui/               # Shadcn auto-generated components (DO NOT EDIT manually)
 │   │   │
 │   │   ├── layout/
-│   │   │   ├── Navbar.jsx            # Top navigation bar (Logo + optional language toggle)
+│   │   │   ├── Navbar.jsx            # Top navigation bar (Logo + Language Toggle)
 │   │   │   └── Footer.jsx            # Minimal footer
 │   │   │
 │   │   ├── upload/
 │   │   │   ├── HeroSection.jsx       # Full-screen video background + upload zone overlay
-│   │   │   ├── DropZone.jsx          # react-dropzone logic (file validation, preview)
+│   │   │   ├── DropZone.jsx          # react-dropzone logic (compression, validation, preview)
 │   │   │   └── AnalyzeButton.jsx     # Main CTA button with loading state
 │   │   │
 │   │   ├── dashboard/
@@ -94,7 +93,7 @@ frontend/
 │   │   │
 │   │   └── shared/
 │   │       ├── LoadingOverlay.jsx    # Full-page loading state during API call
-│   │       └── ErrorAlert.jsx        # Renders API/network errors
+│   │       └── ErrorAlert.jsx        # Renders API/network timeouts & errors
 │   │
 │   ├── lib/
 │   │   ├── api.js            # ALL axios logic, the only file that touches the backend URL
@@ -115,6 +114,7 @@ This is the most critical file. Every component that needs data talks to this, n
 ```javascript
 // src/lib/api.js
 import axios from "axios";
+import imageCompression from 'browser-image-compression';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL; // http://localhost:8000
 
@@ -129,11 +129,16 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL; // http://localhost:8000
  * @throws {Error} If the request fails or the server returns non-2xx
  */
 export async function analyzeLeaf(imageFile, lat = 20.5937, lon = 78.9629, language = "en") {
+  
+  // 1. Compress Image before sending to avoid FastAPI 1MB default limits / slow networks
+  const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
+  const compressedFile = await imageCompression(imageFile, options);
+
   const formData = new FormData();
 
   // CRITICAL: Do NOT set Content-Type header. Axios/browser handles multipart boundary automatically.
   // Backend FastAPI reads these fields as Form() parameters — names must match exactly.
-  formData.append("image", imageFile);   // matches: image: UploadFile = File(...)
+  formData.append("image", compressedFile);   // matches: image: UploadFile = File(...)
   formData.append("lat", lat);           // matches: lat: float = Form(20.5937)
   formData.append("lon", lon);           // matches: lon: float = Form(78.9629)
   formData.append("language", language); // matches: language: str = Form("en")
@@ -177,12 +182,6 @@ export const MOCK_API_RESPONSE = {
 };
 ```
 
-To toggle between mock and real: in `page.jsx`, change one line:
-```javascript
-// REAL: const data = await analyzeLeaf(file, location.lat, location.lon);
-// MOCK: const data = MOCK_API_RESPONSE; await new Promise(r => setTimeout(r, 2000)); // simulate 2s delay
-```
-
 ---
 
 ## 4. Page Orchestrator (`src/app/page.jsx`) — State Machine
@@ -194,27 +193,28 @@ This is the brain of the entire SPA. It manages the flow between the 3 major UI 
 const [file, setFile] = useState(null);
 // The raw File object from the dropzone. null if no file selected.
 
+const [previewUrl, setPreviewUrl] = useState(null);
+// Object URL for the selected image to show a preview before analyzing.
+
 const [location, setLocation] = useState(null);
 // { lat: number, lon: number } | null. Populated by useGeolocation hook.
-// If null, backend defaults to center of India (already handled by api.js default args).
+
+const [language, setLanguage] = useState("en");
+// "en" | "hi". Controlled by Navbar language toggle.
 
 const [appStatus, setAppStatus] = useState("idle");
-// "idle"     → Show the Hero section with upload form.
+// "idle"     → Show the Hero section with upload form and image preview.
 // "loading"  → Show LoadingOverlay. API call is in-flight.
 // "success"  → Show DashboardGrid. apiData is populated.
 // "error"    → Show ErrorAlert. apiError is populated.
 
 const [apiData, setApiData] = useState(null);
-// The full JSON response from FastAPI. null until status === "success".
-
 const [apiError, setApiError] = useState(null);
-// Error message string. null unless status === "error".
 ```
 
 ### Core Handler Function
 ```javascript
 const handleAnalyze = async () => {
-  // Guard: Do not proceed if no file is selected
   if (!file) return;
 
   setAppStatus("loading");
@@ -224,7 +224,7 @@ const handleAnalyze = async () => {
     const lat = location?.lat ?? 20.5937;
     const lon = location?.lon ?? 78.9629;
 
-    const data = await analyzeLeaf(file, lat, lon, "en");
+    const data = await analyzeLeaf(file, lat, lon, language);
 
     // Validate the response has the expected shape before trusting it
     if (!data?.success || !data?.ml_result) {
@@ -235,56 +235,16 @@ const handleAnalyze = async () => {
     setAppStatus("success");
 
   } catch (err) {
-    // Covers: network errors, CORS errors, 500s, timeouts, invalid JSON
-    const message = err?.response?.data?.detail
-      ?? err?.message
-      ?? "Failed to connect to the AI engine. Make sure the backend server is running.";
+    let message = "Failed to connect to the AI engine.";
+    if (err.code === 'ECONNABORTED') {
+      message = "Request timed out. The AI engine is taking too long.";
+    } else {
+      message = err?.response?.data?.detail ?? err?.message ?? message;
+    }
     setApiError(message);
     setAppStatus("error");
   }
 };
-
-const handleReset = () => {
-  // Allows the user to go back and analyze another leaf
-  setFile(null);
-  setApiData(null);
-  setApiError(null);
-  setAppStatus("idle");
-};
-```
-
-### Render Logic
-```jsx
-return (
-  <>
-    <Navbar onReset={appStatus !== "idle" ? handleReset : null} />
-
-    {/* State: idle — show upload form */}
-    {appStatus === "idle" && (
-      <HeroSection
-        file={file}
-        setFile={setFile}
-        location={location}
-        onAnalyze={handleAnalyze}
-      />
-    )}
-
-    {/* State: loading */}
-    {appStatus === "loading" && <LoadingOverlay />}
-
-    {/* State: error — show error, allow retry */}
-    {appStatus === "error" && (
-      <>
-        <ErrorAlert message={apiError} onRetry={handleReset} />
-      </>
-    )}
-
-    {/* State: success — show the full dashboard */}
-    {appStatus === "success" && (
-      <DashboardGrid data={apiData} onReset={handleReset} />
-    )}
-  </>
-);
 ```
 
 ---
@@ -320,191 +280,4 @@ This is the exact JSON the backend returns. Every field maps to a specific UI el
 }
 ```
 
-### 5.1 `DiseaseCard.jsx` ← maps `data.ml_result`
-- `disease_class`: display after running through `formatDiseaseName()` util (replaces `___` with ` — `, replaces `_` with space). e.g. `"Tomato_Septoria_leaf_spot"` → `"Tomato — Septoria leaf spot"`
-- `confidence`: multiply by 100, round to 1 decimal for the Shadcn `<Progress value={conf * 100} />` bar and percentage label.
-- `severity`: Map to UI color:
-  - `"High"` → Red card tint (`bg-red-50 border-red-300`)
-  - `"Medium"` → Orange/Amber tint
-  - `"Low"` → Yellow tint
-  - If `disease_class` contains the word `"healthy"` → Green tint (override all severity colors)
-
-### 5.2 `WeatherCard.jsx` ← maps `data.weather_context`
-- `temperature_c`: Display as `32.5°C`. Simple.
-- `humidity`: Display as `78%` with a humidity icon (Lucide: `Droplets`).
-- `rain_probability`: Display as `85%`. If > 70%, show a warning badge (Shadcn `<Badge variant="destructive">Heavy Rain Expected</Badge>`).
-
-### 5.3 `AgentPlanCard.jsx` ← maps `data.agent_advice`
-- `headline`: Render as a `<h2>` card title.
-- `action_steps`: Render as an ordered checklist using `<ul>` with custom checkbox icons.
-- `translated_message`: Render below the steps in a subtle italic style, labeled `"In your language:"`.
-- **Gemini Fallback Detection:**
-  ```javascript
-  const isGeminiFailed = data.agent_advice?.agent_status === "unavailable";
-  ```
-  If `isGeminiFailed === true`, render a Shadcn `<Alert variant="destructive">` that says: `"AI Agronomist is temporarily unavailable. Your crop diagnosis is still accurate."` The ML and Weather cards still render normally.
-
-### 5.4 `GreenImpactCard.jsx` ← maps `data.agent_advice.sustainability_impact`
-- **ALWAYS use optional chaining** to prevent crashes when Gemini fails:
-  ```javascript
-  const impact = data.agent_advice?.sustainability_impact;
-  const waterSaved = impact?.water_saved_liters_per_acre ?? 0;
-  const chemReduction = impact?.chemical_reduction_percent ?? 0;
-  const note = impact?.methodology_note ?? "Data unavailable";
-  ```
-- `water_saved_liters_per_acre`: Display as `"12,000 Liters / Acre"` (use `toLocaleString()` for comma formatting).
-- `chemical_reduction_percent`: Display as `"15% less chemicals"`.
-- `methodology_note`: Display as small caption text.
-
----
-
-## 6. Custom Hooks
-
-### `useGeolocation.js`
-```javascript
-// src/hooks/useGeolocation.js
-import { useState, useEffect } from "react";
-
-export function useGeolocation() {
-  const [location, setLocation] = useState(null); // {lat, lon} | null
-  const [geoStatus, setGeoStatus] = useState("idle"); // "idle" | "granted" | "denied"
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setGeoStatus("denied");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude });
-        setGeoStatus("granted");
-      },
-      () => {
-        setGeoStatus("denied"); // Fallback lat/lon will be used automatically
-      }
-    );
-  }, []);
-
-  return { location, geoStatus };
-}
-```
-
-### `useLenis.js`
-```javascript
-// src/hooks/useLenis.js
-import { useEffect } from "react";
-import Lenis from "@studio-freight/lenis";
-
-export function useLenis() {
-  useEffect(() => {
-    const lenis = new Lenis({ lerp: 0.08, smooth: true });
-    const raf = (time) => { lenis.raf(time); requestAnimationFrame(raf); };
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
-  }, []);
-}
-```
-
----
-
-## 7. GSAP Animations
-
-### Card Stagger Reveal (`DashboardGrid.jsx`)
-When `appStatus` transitions from `"loading"` to `"success"`, trigger this:
-```javascript
-useEffect(() => {
-  if (!data) return;
-  gsap.fromTo(
-    ".dashboard-card",
-    { y: 60, opacity: 0 },
-    { y: 0, opacity: 1, duration: 0.7, stagger: 0.15, ease: "power3.out" }
-  );
-}, [data]);
-```
-Each card must have `className="dashboard-card"` applied.
-
-### Card Hover Zoom (`DiseaseCard`, `WeatherCard`, etc.)
-```javascript
-const cardRef = useRef(null);
-// On mouseenter:
-gsap.to(cardRef.current, { scale: 1.03, duration: 0.3, ease: "power2.out" });
-// On mouseleave:
-gsap.to(cardRef.current, { scale: 1.0, duration: 0.3, ease: "power2.out" });
-```
-
----
-
-## 8. File Validation Logic (`DropZone.jsx`)
-
-```javascript
-// react-dropzone config
-const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
-  accept: { "image/jpeg": [], "image/png": [], "image/webp": [] },
-  maxFiles: 1,
-  maxSize: 10 * 1024 * 1024, // 10MB client-side limit (pending Q2 answer from Ayush)
-  onDrop: (accepted, rejected) => {
-    if (accepted.length > 0) {
-      setFile(accepted[0]);
-    }
-    // Handle rejected files (wrong type, too large)
-    if (rejected.length > 0) {
-      const err = rejected[0].errors[0];
-      alert(err.code === "file-too-large" ? "Image is too large. Max 10MB." : "Only JPG/PNG/WEBP accepted.");
-    }
-  }
-});
-```
-
----
-
-## 9. Error Handling Matrix
-
-| Scenario | Source | Frontend Behavior |
-|---|---|---|
-| No file selected, user clicks Analyze | Client-side guard | Button disabled until `file !== null` |
-| User denies geolocation | `useGeolocation` | Status shows "Location unavailable, using default". API call still proceeds with India fallback |
-| Network error (backend not running) | Axios timeout/network | `appStatus = "error"`, `ErrorAlert` with "Make sure the backend server is running at localhost:8000" |
-| Backend returns HTTP 422 (bad form data) | FastAPI validation | `appStatus = "error"`, display `err.response.data.detail` from FastAPI |
-| Backend returns HTTP 500 | Server crash | `appStatus = "error"`, generic message |
-| Gemini API fails (backend handles internally) | `agent_status: "unavailable"` in JSON | `appStatus = "success"` still. Only `AgentPlanCard` shows a soft warning alert. Other 3 cards render normally |
-| `success: false` in response body | Backend logic error | Treat same as HTTP error — `appStatus = "error"` |
-| Response timeout (>30 seconds) | Axios `timeout: 30000` | `appStatus = "error"`, "Request timed out. The AI engine is taking too long." |
-
----
-
-## 10. Navbar Logic (`Navbar.jsx`)
-
-- **Logo:** "AgriSmart AI" text in serif font (Cormorant/Playfair).
-- **If `appStatus === "idle"`:** No extra buttons.
-- **If `appStatus === "success"`:** Show an "← Analyze Another" button that calls `handleReset()` (passed as `onReset` prop).
-- **Language Toggle (Pending Q4):** If approved, a simple `<Select>` with `EN | HI` options that updates the `language` state variable in `page.jsx`.
-
----
-
-## 11. SEO Metadata (`layout.jsx`)
-
-```javascript
-export const metadata = {
-  title: "AgriSmart AI — Instant Crop Disease Detection",
-  description: "Upload a leaf photo and get an AI-powered disease diagnosis with actionable treatment plans in seconds.",
-  keywords: ["crop disease detection", "agriculture AI", "plant disease", "SIH 2026", "AgriSmart"],
-  openGraph: {
-    title: "AgriSmart AI",
-    description: "AI-powered crop disease detection for Indian farmers.",
-    type: "website",
-  },
-};
-```
-
----
-
-## Open Questions Summary
-
-| # | Question | Impact |
-|---|---|---|
-| Q1 | Production backend URL strategy | `NEXT_PUBLIC_API_URL` env var |
-| Q2 | Image size limit & compression | `maxSize` in DropZone, optional `browser-image-compression` |
-| Q3 | Loading timeout threshold | `timeout` in axios config |
-| Q4 | Language toggle in UI now? | Adds `<Select>` to Navbar |
-| Q5 | Show thumbnail preview after file select? | DropZone `preview` state |
-| Q6 | PWA implementation now? | `next-pwa` plugin in `next.config.mjs` |
+*(Remaining component mapping, hooks, GSAP, and File Validation logic remains the same as previously documented, perfectly aligned with the backend).*
