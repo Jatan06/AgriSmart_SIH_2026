@@ -41,36 +41,35 @@ export default function DropZone({ onAnalyze }) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/5 p-10 rounded-3xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
-      
+    <div className="w-full">
       {!preview ? (
         <div 
           {...getRootProps()} 
-          className={`flex flex-col items-center justify-center border border-dashed rounded-2xl p-16 cursor-pointer transition-all duration-500 ease-out ${
-            isDragActive ? "border-primary/80 bg-primary/20 scale-105" : "border-white/30 hover:border-white/60 hover:bg-white/5"
+          className={`flex flex-col items-center justify-center border border-dashed rounded-none p-16 cursor-pointer transition-all duration-300 ${
+            isDragActive ? "border-[#30261D] bg-[#30261D]/5" : "border-[#30261D]/30 hover:border-[#30261D]/60 hover:bg-[#30261D]/5"
           }`}
         >
           <input {...getInputProps()} />
-          <UploadCloud className="w-16 h-16 text-white/80 mb-6 animate-pulse" strokeWidth={1} />
-          <p className="text-white text-xl font-heading tracking-wide text-center drop-shadow-md">
-            {isDragActive ? "Drop the leaf image here..." : "Drag & drop a leaf image, or click to browse"}
+          <UploadCloud className="w-10 h-10 text-[#30261D] mb-6" strokeWidth={1} />
+          <p className="text-[#30261D] text-2xl font-heading tracking-wide text-center">
+            {isDragActive ? "Drop the leaf image here..." : "Drag & drop a leaf image"}
           </p>
-          <p className="text-white/50 text-sm mt-3 tracking-widest uppercase text-center font-sans">
-            Supports JPG, PNG, WEBP up to 10MB
+          <p className="text-[#30261D]/50 text-xs mt-4 tracking-widest uppercase text-center font-sans">
+            JPG, PNG, WEBP (Max 10MB)
           </p>
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 shadow-2xl border border-white/20">
+          <div className="relative w-full aspect-video overflow-hidden mb-8 border border-[#30261D]/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={preview} 
               alt="Leaf preview" 
-              className="object-cover w-full h-full"
+              className="object-cover w-full h-full grayscale-[20%]"
             />
             <button 
               onClick={handleClear}
-              className="absolute top-4 right-4 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-md transition-all duration-300 hover:rotate-90"
+              className="absolute top-4 right-4 bg-[#DBC8B7] hover:bg-[#30261D] text-[#30261D] hover:text-[#DBC8B7] p-3 transition-colors duration-300"
             >
               <X className="w-5 h-5" />
             </button>
@@ -79,9 +78,9 @@ export default function DropZone({ onAnalyze }) {
           <Button 
             size="lg" 
             onClick={handleAnalyze}
-            className="w-full text-xl font-heading h-16 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_rgba(145,145,102,0.4)] transition-all duration-300 hover:scale-[1.02]"
+            className="w-full text-sm uppercase tracking-widest font-sans h-16 bg-[#30261D] hover:bg-[#5A4635] text-[#DBC8B7] rounded-none transition-colors duration-300"
           >
-            <Leaf className="w-6 h-6 mr-3" />
+            <Leaf className="w-4 h-4 mr-3" />
             Analyze Plant Health
           </Button>
         </div>

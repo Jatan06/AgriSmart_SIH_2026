@@ -8,18 +8,29 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import HeroSection from "@/components/HeroSection";
-import DashboardGrid from "@/components/DashboardGrid";
+import FeaturesTimeline from "@/components/FeaturesTimeline";
+import UploadSection from "@/components/UploadSection";
+import DiagnosisSection from "@/components/DiagnosisSection";
+import WeatherSection from "@/components/WeatherSection";
+import TreatmentSection from "@/components/TreatmentSection";
+import ImpactSection from "@/components/ImpactSection";
+import TechnicalSection from "@/components/TechnicalSection";
+import Footer from "@/components/Footer";
 
-const LoadingOverlayPlaceholder = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen space-y-4 bg-background z-50 fixed inset-0">
-    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-    <h2 className="text-2xl font-heading animate-pulse text-foreground">Analyzing Plant Health...</h2>
+const LoadingOverlay = () => (
+  <div className="flex flex-col items-center justify-center min-h-[50vh] bg-paper">
+    <div className="font-sans text-xs uppercase tracking-widest text-coffee/50 mb-4 animate-pulse">
+      Analyzing Field...
+    </div>
+    <div className="w-full max-w-md h-px bg-coffee/10 relative overflow-hidden">
+      <div className="absolute top-0 left-0 h-full bg-olive w-1/3 animate-[slide_1.5s_ease-in-out_infinite]"></div>
+    </div>
   </div>
 );
 
 export default function Home() {
   const [file, setFile] = useState(null); 
-  const [appStatus, setAppStatus] = useState("idle"); 
+  const [appStatus, setAppStatus] = useState("idle"); // idle, loading, success, error
   const [apiData, setApiData] = useState(null);
   const [apiError, setApiError] = useState(null);
 
@@ -29,12 +40,9 @@ export default function Home() {
     setApiError(null);
 
     try {
-      // MOCK MODE: Simulate network delay and use mock data
+      // Mock network delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       const data = MOCK_API_RESPONSE;
-
-      // REAL MODE (Will be active when we hook up dropzone to real backend):
-      // const data = await analyzeLeaf(selectedFile, 20.5937, 78.9629, "en");
 
       if (!data?.success || !data?.ml_result) {
         throw new Error("Invalid response shape from server.");
@@ -43,13 +51,7 @@ export default function Home() {
       setApiData(data);
       setAppStatus("success");
     } catch (err) {
-      let message = "Failed to connect to the AI engine.";
-      if (err.code === 'ECONNABORTED') {
-        message = "Request timed out. The AI engine is taking too long.";
-      } else {
-        message = err?.response?.data?.detail ?? err?.message ?? message;
-      }
-      setApiError(message);
+      setApiError("Failed to connect to the AI engine.");
       setAppStatus("error");
     }
   };
@@ -62,31 +64,63 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-background relative selection:bg-primary/20">
+    <main className="min-h-screen bg-paper text-coffee relative font-sans selection:bg-olive/20">
       
-      {appStatus === "idle" && (
-        <HeroSection onAnalyze={handleAnalyze} />
+      {/* 
+        The Hero is only shown when we don't have results yet.
+        Once results are in, the Diagnosis becomes the Hero.
+      */}
+      {(appStatus === "idle" || appStatus === "loading" || appStatus === "error") && (
+        <>
+          <HeroSection />
+          
+          {appStatus === "idle" && (
+            <>
+              <FeaturesTimeline />
+              <UploadSection onAnalyze={handleAnalyze} />
+            </>
+          )}
+
+          {appStatus === "loading" && (
+            <LoadingOverlay />
+          )}
+
+          {appStatus === "error" && (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] bg-paper px-6">
+              <div className="max-w-xl text-center">
+                <h3 className="font-heading text-4xl mb-4 text-coffee">Analysis Failed</h3>
+                <p className="font-sans text-coffee/60 mb-8">{apiError}</p>
+                <Button 
+                  onClick={handleReset} 
+                  variant="outline"
+                  className="bg-transparent border border-coffee/30 text-coffee hover:bg-coffee hover:text-paper rounded-none uppercase text-xs tracking-widest px-8"
+                >
+                  Return to Field
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
-      {appStatus === "loading" && (
-        <LoadingOverlayPlaceholder />
-      )}
+      {appStatus === "success" && apiData && (
+        <div className="pt-24 md:pt-32"> {/* Offset for navbar */}
+          <DiagnosisSection data={apiData} file={file} />
+          
+          {/* Full-width visual transition image (placeholder for now) */}
+          <div className="w-full h-64 md:h-96 bg-earth/20 relative overflow-hidden my-24">
+             {/* We can place an agricultural texture or image here later */}
+             <div className="absolute inset-0 bg-coffee/10 mix-blend-multiply"></div>
+          </div>
 
-      {appStatus === "error" && (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-6">
-          <Alert variant="destructive" className="max-w-xl">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{apiError}</AlertDescription>
-          </Alert>
-          <Button onClick={handleReset} variant="outline">Go Back</Button>
+          <WeatherSection data={apiData} />
+          <TreatmentSection data={apiData} />
+          <ImpactSection />
+          <TechnicalSection />
         </div>
       )}
-
-      {appStatus === "success" && (
-        <DashboardGrid data={apiData} onReset={handleReset} />
-      )}
       
+      <Footer />
     </main>
   );
 }

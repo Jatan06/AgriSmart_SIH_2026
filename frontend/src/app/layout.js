@@ -1,31 +1,34 @@
-import { Playfair_Display, Outfit } from "next/font/google";
+import { Manrope, Lora } from "next/font/google";
 import "./globals.css";
+import { ReactLenis } from 'lenis/react';
 
-const playfair = Playfair_Display({
-  variable: "--font-heading",
+const manrope = Manrope({ 
   subsets: ["latin"],
+  variable: '--font-sans',
 });
 
-const outfit = Outfit({
-  variable: "--font-sans",
+const lora = Lora({ 
   subsets: ["latin"],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-heading',
 });
 
 export const metadata = {
-  title: "AgriSmart AI — Instant Crop Disease Detection",
+  title: "AgriSmart AI | Instant Crop Diagnosis",
   description: "Upload a leaf photo and get an AI-powered disease diagnosis with actionable treatment plans in seconds.",
 };
 
-import { ReactLenis } from 'lenis/react';
+import Navbar from "@/components/Navbar";
 
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${playfair.variable} h-full antialiased`}
+      className={`${manrope.variable} ${lora.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex flex-col font-sans">
         <ReactLenis root>
+          <Navbar />
           {children}
         </ReactLenis>
       </body>

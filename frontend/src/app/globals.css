@@ -5,11 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-paper: var(--paper);
+  --color-coffee: var(--coffee);
+  --color-olive: var(--olive);
+  --color-earth: var(--earth);
+  --color-warm: var(--warm);
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-heading);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,76 +55,72 @@
 }
 
 :root {
-  --background: #FCFCF7;
-  --foreground: #1C1C13;
+  --paper: #FCFCF7;
+  --coffee: #1C1C13;
+  --olive: #919166;
+  --earth: #6B4F3A;
+  --warm: #DBC8B7;
+
+  /* Map standard Shadcn variables to the new tokens for compatibility */
+  --background: var(--paper);
+  --foreground: var(--coffee);
   
-  --card: #FCFCF7;
-  --card-foreground: #1C1C13;
+  --card: var(--paper);
+  --card-foreground: var(--coffee);
   
-  --popover: #FCFCF7;
-  --popover-foreground: #1C1C13;
+  --popover: var(--paper);
+  --popover-foreground: var(--coffee);
   
-  --primary: #919166;
-  --primary-foreground: #FCFCF7;
+  --primary: var(--coffee);
+  --primary-foreground: var(--paper);
   
-  --secondary: #EBEBE6; /* slightly darker than bg for contrast */
-  --secondary-foreground: #1C1C13;
+  --secondary: var(--warm);
+  --secondary-foreground: var(--coffee);
   
-  --muted: #EBEBE6;
-  --muted-foreground: #666655;
+  --muted: var(--warm);
+  --muted-foreground: var(--earth);
   
-  --accent: #919166;
-  --accent-foreground: #FCFCF7;
+  --accent: var(--earth);
+  --accent-foreground: var(--paper);
   
   --destructive: #A33327;
-  --destructive-foreground: #FCFCF7;
+  --destructive-foreground: var(--paper);
   
-  --border: #D1D1C7;
-  --input: #D1D1C7;
-  --ring: #919166;
+  --border: var(--warm);
+  --input: var(--warm);
+  --ring: var(--olive);
   
-  --chart-1: #919166;
-  --chart-2: #A3A37A;
-  --chart-3: #1C1C13;
-  --chart-4: #D89C4E;
-  --chart-5: #6B705C;
-  --radius: 0.75rem;
+  --radius: 0rem;
 }
 
 .dark {
-  --background: #1C1C13;
-  --foreground: #FCFCF7;
+  --background: var(--coffee);
+  --foreground: var(--paper);
   
-  --card: #26261E;
-  --card-foreground: #FCFCF7;
+  --card: var(--coffee);
+  --card-foreground: var(--paper);
   
-  --popover: #26261E;
-  --popover-foreground: #FCFCF7;
+  --popover: var(--coffee);
+  --popover-foreground: var(--paper);
   
-  --primary: #919166;
-  --primary-foreground: #1C1C13;
+  --primary: var(--paper);
+  --primary-foreground: var(--coffee);
   
-  --secondary: #333329;
-  --secondary-foreground: #FCFCF7;
+  --secondary: var(--earth);
+  --secondary-foreground: var(--paper);
   
-  --muted: #333329;
-  --muted-foreground: #A3A393;
+  --muted: #241D16;
+  --muted-foreground: var(--warm);
   
-  --accent: #919166;
-  --accent-foreground: #1C1C13;
+  --accent: var(--paper);
+  --accent-foreground: var(--coffee);
   
   --destructive: #CF665A;
-  --destructive-foreground: #1C1C13;
+  --destructive-foreground: var(--coffee);
   
-  --border: #404033;
-  --input: #404033;
-  --ring: #919166;
-  
-  --chart-1: #919166;
-  --chart-2: #A3A37A;
-  --chart-3: #FCFCF7;
-  --chart-4: #D89C4E;
-  --chart-5: #6B705C;
+  --border: var(--earth);
+  --input: var(--earth);
+  --ring: var(--olive);
 }
 
 @layer base {

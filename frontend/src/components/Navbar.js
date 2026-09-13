@@ -1,29 +1,101 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Navbar() {
   const [language, setLanguage] = useState("en");
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === "en" ? "hi" : "en");
-    // We will sync this with global state or local storage later if needed.
-    // For now, it's just visual in the prototype.
+    setLanguage(language === "en" ? "gu" : "en");
   };
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Change color after scrolling past a portion of the hero (e.g., 100px)
+      if (window.scrollY > 100) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useGSAP(() => {
+    // GSAP is no longer used for navbar toggling to avoid DOMTokenList errors.
+  }, []);
+
   return (
-    <nav className="absolute top-0 w-full z-50 px-10 py-8 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
-      <div className="flex items-center space-x-2 text-[#FCFCF7]">
-        <span className="font-heading text-3xl font-medium tracking-wide">AgriSmart AI</span>
+    <nav 
+      id="main-navbar"
+      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 flex justify-between items-center px-6 md:px-12 h-20 md:h-24 ${
+        isScrolled 
+          ? "bg-[#FCFCF7]/95 backdrop-blur-md shadow-sm text-[#1C1C13]" 
+          : "bg-transparent text-[#FCFCF7]"
+      }`}
+    >
+      {/* LEFT: Logo + Wordmark */}
+      <div className="flex items-center space-x-4 cursor-pointer">
+        {/* Custom SVG Logo (Concentric growth rings / crop rows) */}
+        <svg width="48" height="48" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="1.5"/>
+          <circle cx="20" cy="20" r="13" stroke="currentColor" strokeWidth="1.5"/>
+          <circle cx="20" cy="20" r="8" stroke="currentColor" strokeWidth="1.5"/>
+          <circle cx="20" cy="20" r="3" fill="currentColor"/>
+          <path d="M20 2V38" stroke="currentColor" strokeWidth="1.5"/>
+        </svg>
+        <span className="font-sans font-semibold tracking-[0.15em] text-lg md:text-2xl">
+          AGRISMART AI
+        </span>
       </div>
       
-      <div className="flex items-center space-x-4">
-        <Button 
-          variant="outline" 
+      {/* CENTER / RIGHT: Navigation */}
+      <div className="hidden md:flex items-center space-x-8 font-sans text-xs uppercase tracking-widest pointer-events-auto">
+        <a href="#analyze" className="hover:text-olive transition-colors">Analyze</a>
+        <a href="#insights" className="hover:text-olive transition-colors">Field Insights</a>
+        <a href="#how-it-works" className="hover:text-olive transition-colors">How it Works</a>
+        
+        <div className="w-px h-4 bg-coffee/20"></div>
+        
+        <button 
           onClick={toggleLanguage}
-          className="bg-black/20 border-[#FCFCF7]/30 text-[#FCFCF7] hover:bg-[#FCFCF7] hover:text-[#1C1C13] transition-colors rounded-full px-6 font-sans tracking-wide backdrop-blur-sm"
+          className="hover:text-olive transition-colors font-medium flex items-center space-x-1"
         >
-          {language === "en" ? "Translate to Hindi" : "Translate to English"}
-        </Button>
+          <span className={language === "en" ? "opacity-100" : "opacity-40"}>EN</span>
+          <span>|</span>
+          <span className={language === "gu" ? "opacity-100" : "opacity-40"}>ગુજરાતી</span>
+        </button>
+
+        <button className="flex items-center justify-center w-10 h-10 rounded-full border border-coffee/20 hover:bg-coffee hover:text-paper transition-all">
+          <Menu className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* MOBILE RIGHT */}
+      <div className="flex md:hidden items-center space-x-4">
+        <button 
+          onClick={toggleLanguage}
+          className="font-sans text-xs uppercase tracking-widest font-medium pointer-events-auto"
+        >
+          {language === "en" ? "EN" : "GU"}
+        </button>
+        {/* MOBILE: Menu Icon */}
+        <div className="md:hidden">
+          <Button variant="ghost" size="icon" className="hover:text-[#919166]">
+            <Menu className="w-6 h-6" />
+          </Button>
+        </div>
       </div>
     </nav>
   );
