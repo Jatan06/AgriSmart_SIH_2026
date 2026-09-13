@@ -55,6 +55,8 @@
 }
 
 :root {
+  --navbar-height: 96px; /* 6rem to match h-24 on desktop */
+
   --paper: #FCFCF7;
   --coffee: #1C1C13;
   --olive: #919166;

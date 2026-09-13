@@ -40,9 +40,24 @@ export default function Home() {
     setApiError(null);
 
     try {
-      // Mock network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const data = MOCK_API_RESPONSE;
+      // Get location if available
+      let lat = 20.5937; // Default: Center of India
+      let lon = 78.9629;
+      
+      if ("geolocation" in navigator) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          lat = position.coords.latitude;
+          lon = position.coords.longitude;
+        } catch (e) {
+          console.warn("Location access denied or timeout. Using default.");
+        }
+      }
+
+      // Call the actual FastAPI backend
+      const data = await analyzeLeaf(selectedFile, lat, lon, "en");
 
       if (!data?.success || !data?.ml_result) {
         throw new Error("Invalid response shape from server.");
@@ -103,15 +118,11 @@ export default function Home() {
         </>
       )}
 
-      {appStatus === "success" && apiData && (
-        <div className="pt-24 md:pt-32"> {/* Offset for navbar */}
+      {/* Dynamic Results Section (Only shown after upload) */}
+      {apiData && (
+        <div className="pt-[var(--navbar-height)] scroll-mt-[var(--navbar-height)]">
           <DiagnosisSection data={apiData} file={file} />
           
-          {/* Full-width visual transition image (placeholder for now) */}
-          <div className="w-full h-64 md:h-96 bg-earth/20 relative overflow-hidden my-24">
-             {/* We can place an agricultural texture or image here later */}
-             <div className="absolute inset-0 bg-coffee/10 mix-blend-multiply"></div>
-          </div>
 
           <WeatherSection data={apiData} />
           <TreatmentSection data={apiData} />

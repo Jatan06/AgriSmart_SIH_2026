@@ -59,7 +59,7 @@ def train():
     train_dataset = AgriDataset(train_paths, train_labels, get_train_transforms())
     val_dataset = AgriDataset(val_paths, val_labels, get_val_transforms())
 
-    batch_size = 32 # Hardcoded per protocol to prevent Kaggle Out-Of-Memory
+    batch_size = 16 # Lowered to 16 to prevent Kaggle Out-Of-Memory with ConvNeXt
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
     
@@ -76,9 +76,10 @@ def train():
     # GradScaler for AMP mixed precision — MUST be defined before training loop
     scaler = torch.cuda.amp.GradScaler(enabled=(device.type == "cuda"))
 
-    epochs = 15     # As requested by user
-    criterion = FocalLoss(alpha=0.25, gamma=2.0)
-    optimizer = optim.AdamW(model.parameters(), lr=1e-4)
+    # Swapped FocalLoss for CrossEntropy with label smoothing to prevent NaN explosion in float16
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    optimizer = optim.AdamW(model.parameters(), lr=5e-5, weight_decay=1e-2)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
     
     best_f1 = 0.0
 
@@ -109,6 +110,7 @@ def train():
             loop.set_postfix(loss=loss.item())
             
         train_loss /= len(train_loader)
+        scheduler.step() # Step the learning rate scheduler down a curve
         
         # Validation
         model.eval()

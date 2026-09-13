@@ -28,7 +28,7 @@ app = FastAPI(
 # CORS: Without this, the Next.js frontend on localhost:3000 cannot talk to this server.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

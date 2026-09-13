@@ -35,9 +35,13 @@ def load_model():
     num_classes = len(_class_names)
     print(f"[inference] Loaded {num_classes} class names.")
 
-    # 2. Load ONNX Session
-    _session = ort.InferenceSession(WEIGHTS_PATH)
-    print(f"[inference] ONNX Model loaded from {WEIGHTS_PATH}")
+    # 2. Load ONNX Session with optimized options to prevent CPU overheating
+    opts = ort.SessionOptions()
+    opts.intra_op_num_threads = 1
+    opts.inter_op_num_threads = 1
+    
+    _session = ort.InferenceSession(WEIGHTS_PATH, sess_options=opts)
+    print(f"[inference] ONNX Model loaded from {WEIGHTS_PATH} (Optimized for low CPU)")
 
 
 def run_inference(image_bytes: bytes) -> dict:

@@ -1,130 +1,268 @@
 "use client";
 
-import { useRef, useState } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ArrowDown } from "lucide-react";
+import { useState, useEffect } from "react";
 
-export default function WeatherSection({ data }) {
-  const [whyExpanded, setWhyExpanded] = useState(false);
-  const contentRef = useRef(null);
-  
-  const weather = data?.weather_context || {};
-  const temp = weather.temperature_c ? Math.round(weather.temperature_c) : 28;
-  const humidity = weather.humidity || 76;
-  const rainProb = weather.rain_probability || 82;
-
-  useGSAP(() => {
-    if (whyExpanded) {
-      gsap.to(contentRef.current, {
-        height: "auto",
-        opacity: 1,
-        duration: 0.5,
-        ease: "power2.out"
-      });
-    } else {
-      gsap.to(contentRef.current, {
-        height: 0,
-        opacity: 0,
-        duration: 0.4,
-        ease: "power2.in"
-      });
-    }
-  }, [whyExpanded]);
+// Animated bar — pure CSS transition, thicker and brighter
+function StatBar({ value, max = 100 }) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setW((value / max) * 100), 80);
+    return () => clearTimeout(t);
+  }, [value, max]);
 
   return (
-    <section className="w-full bg-earth text-paper py-12 md:py-16 px-6 md:px-16 overflow-hidden">
+    <div className="mt-4 h-[2px] w-full bg-paper/30 relative overflow-visible rounded-full">
+      <div
+        className="h-full bg-paper transition-all duration-[1200ms] ease-out rounded-full shadow-[0_0_8px_rgba(252,252,247,0.5)]"
+        style={{ width: `${w}%` }}
+      />
+    </div>
+  );
+}
+
+// Count-up number animation
+function CountUp({ target, suffix = "", decimals = 0 }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const end = parseFloat(target) || 0;
+    const step = end / 45;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= end) { setVal(end); clearInterval(timer); }
+      else setVal(current);
+    }, 25);
+    return () => clearInterval(timer);
+  }, [target]);
+  return <>{decimals > 0 ? val.toFixed(decimals) : Math.round(val)}{suffix}</>;
+}
+
+export default function WeatherSection({ data }) {
+  const [whyOpen, setWhyOpen] = useState(false);
+
+  const weather = data?.weather_context || {};
+  const temp = weather.temperature_c ?? 27;
+  const hum  = weather.humidity ?? 93;
+  const rain = weather.rain_probability ?? 86;
+  const wind = weather.wind_speed ?? 14;
+  const uv   = weather.uv_index ?? 3;
+
+  const isHighRisk = rain > 70;
+  const isMedRisk  = rain > 40;
+
+  let recLine1 = "Conditions are clear.";
+  let recLine2 = "Treat now.";
+  if (isHighRisk)  { recLine1 = "Rain imminent.";   recLine2 = "Do not apply treatment."; }
+  else if (isMedRisk) { recLine1 = "Rain approaching."; recLine2 = "Apply treatment early."; }
+
+  return (
+    <section
+      className="w-full py-16 px-6 md:px-16"
+      // Much darker brown background for maximum contrast
+      style={{ backgroundColor: "#36261A", color: "#FCFCF7" }}
+    >
       <div className="max-w-5xl mx-auto">
-        
-        <div className="font-sans text-[10px] tracking-[0.2em] uppercase text-paper/60 mb-8">
+
+        {/* ─── SECTION LABEL ─────────────────────────────────── */}
+        <div
+          className="font-sans text-sm md:text-base font-bold tracking-[0.3em] uppercase mb-12"
+          style={{ color: "#FCFCF7", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}
+        >
           FIELD CONDITIONS
         </div>
 
-        {/* Top Stats */}
-        <div className="grid grid-cols-3 gap-8 md:gap-12 mb-12 border-b border-paper/10 pb-8">
-          <div>
-            <div className="font-heading text-3xl md:text-5xl font-light mb-2">{temp}&deg;</div>
-            <div className="font-sans text-[10px] uppercase tracking-widest text-paper/60">Temperature</div>
-          </div>
-          <div>
-            <div className="font-heading text-3xl md:text-5xl font-light mb-2">{humidity}%</div>
-            <div className="font-sans text-[10px] uppercase tracking-widest text-paper/60">Humidity</div>
-          </div>
-          <div>
-            <div className="font-heading text-3xl md:text-5xl font-light mb-2">{rainProb}%</div>
-            <div className="font-sans text-[10px] uppercase tracking-widest text-paper/60">Rain Prob</div>
-          </div>
-        </div>
-
-        {/* Minimal Timeline */}
-        <div className="mb-16 relative">
-          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-paper/20 -translate-y-1/2"></div>
-          {/* GSAP animated rain curve concept */}
-          <svg className="absolute top-0 left-0 w-full h-full text-olive opacity-80" viewBox="0 0 1000 100" preserveAspectRatio="none">
-             <path d="M0 80 Q 250 80 400 20 T 800 80 L 1000 80" fill="none" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          
-          <div className="relative z-10 flex justify-between items-center w-full">
-            <div className="flex flex-col items-center">
-              <div className="w-2 h-2 rounded-full bg-paper mb-4"></div>
-              <span className="font-sans text-xs tracking-widest">NOW</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-2 h-2 rounded-full bg-paper/40 mb-4"></div>
-              <span className="font-sans text-xs tracking-widest text-paper/60">+1H</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-2 h-2 rounded-full bg-olive mb-4 shadow-[0_0_15px_rgba(145,145,102,0.6)]"></div>
-              <span className="font-sans text-xs tracking-widest text-olive font-bold">+2H</span>
-            </div>
-            <div className="flex flex-col items-center hidden md:flex">
-              <div className="w-2 h-2 rounded-full bg-paper/40 mb-4"></div>
-              <span className="font-sans text-xs tracking-widest text-paper/60">+4H</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-2 h-2 rounded-full bg-paper/40 mb-4"></div>
-              <span className="font-sans text-xs tracking-widest text-paper/60">+6H</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Causality Statement */}
-        <div className="flex flex-col items-center text-center max-w-xl mx-auto">
-          
-          <div className="font-heading text-2xl md:text-3xl text-paper mb-4">
-            Rain expected in 2 hours.
-          </div>
-          
-          <ArrowDown className="w-5 h-5 text-olive mb-4 opacity-80" strokeWidth={1} />
-          
-          <div className="font-heading text-2xl md:text-3xl text-paper mb-6">
-            Treatment should wait.
-          </div>
-          
-          <div className="border border-olive/30 px-6 py-4 flex flex-col items-center justify-center mb-8">
-            <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-paper/60 mb-1">Next Safe Window</span>
-            <span className="font-sans text-lg md:text-xl text-olive tracking-widest">18:40 – 20:10</span>
-          </div>
-
-          {/* Expandable Why */}
-          <div className="w-full text-left border-t border-paper/10 pt-6">
-            <button 
-              onClick={() => setWhyExpanded(!whyExpanded)}
-              className="font-sans text-xs uppercase tracking-widest text-paper/70 hover:text-paper transition-colors w-full flex justify-between items-center"
+        {/* ─── PRIMARY WEATHER STATS ─────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 mb-6 md:border-t md:border-b" style={{ borderColor: "rgba(252,252,247,0.2)" }}>
+          {[
+            { label: "TEMPERATURE", value: temp, suffix: "°C" },
+            { label: "HUMIDITY",    value: hum,  suffix: "%" },
+            { label: "RAIN PROBABILITY", value: rain, suffix: "%" },
+          ].map((item, i) => (
+            <div
+              key={item.label}
+              className={`py-4 md:py-10 md:px-8 ${i > 0 ? "md:border-l" : ""}`}
+              style={{ borderColor: "rgba(252,252,247,0.2)" }}
             >
-              <span>Why this recommendation?</span>
-              <span className="text-lg leading-none">{whyExpanded ? "−" : "+"}</span>
-            </button>
-            <div ref={contentRef} className="h-0 opacity-0 overflow-hidden">
-              <p className="font-sans text-paper/80 font-light leading-relaxed mt-6 text-sm md:text-base max-w-lg">
-                Rain is expected in approximately 2 hours. Applying treatment now could reduce treatment 
-                effectiveness because rainfall may wash the product away before it is absorbed. 
-                The next suitable treatment window is expected between 18:40 and 20:10 when dry conditions stabilize.
-              </p>
+              <div
+                className="font-sans text-xs md:text-sm font-semibold tracking-[0.2em] uppercase mb-4"
+                style={{ color: "#FCFCF7", opacity: 0.9 }}
+              >
+                {item.label}
+              </div>
+              <div className="font-heading text-5xl md:text-6xl font-normal" style={{ color: "#FCFCF7", textShadow: "0 2px 10px rgba(0,0,0,0.2)" }}>
+                <CountUp target={item.value} suffix={item.suffix} decimals={item.value % 1 !== 0 ? 1 : 0} />
+              </div>
+              <StatBar value={item.value} />
             </div>
+          ))}
+        </div>
+
+        {/* ─── SECONDARY STATS ───────────────────────────────── */}
+        <div className="flex gap-8 mb-16 px-4" style={{ color: "#FCFCF7" }}>
+          <span className="font-sans text-sm font-medium tracking-widest uppercase">WIND {wind} km/h</span>
+          <span style={{ color: "rgba(252,252,247,0.5)" }}>·</span>
+          <span className="font-sans text-sm font-medium tracking-widest uppercase">UV INDEX {uv}</span>
+        </div>
+
+        {/* ─── 6-HOUR TIMELINE ───────────────────────────────── */}
+        <div className="mb-16 px-4 bg-black/20 p-8 rounded-2xl border border-white/10">
+          <div
+            className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-12 text-center"
+            style={{ color: "#FCFCF7" }}
+          >
+            6-HOUR OUTLOOK
           </div>
 
+          <div className="relative mt-8">
+            {/* Track */}
+            <div
+              className="absolute top-[9px] left-0 right-0 h-[2px]"
+              style={{ backgroundColor: "rgba(252,252,247,0.3)" }}
+            />
+            {/* Dots + Labels */}
+            <div className="relative flex justify-between items-start z-10 px-2 md:px-10">
+              {["NOW", "+1H", "+2H", "+4H", "+6H"].map((label, idx) => {
+                const isActive = idx === 2;
+                return (
+                  <div key={label} className="flex flex-col items-center gap-4 relative group cursor-default">
+                    {/* Concentric rotating rings */}
+                    {isActive && (
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-0">
+                        {/* Outer Ring */}
+                        <div className="absolute w-[50px] h-[50px] rounded-full border-[1.5px] border-white/60 border-b-transparent border-l-transparent animate-[spin_4s_linear_infinite]" />
+                        {/* Middle Ring */}
+                        <div className="absolute w-[36px] h-[36px] rounded-full border-[1.5px] border-white/40 border-t-transparent border-r-transparent animate-[spin_2.5s_linear_infinite_reverse]" />
+                        {/* Inner Ring */}
+                        <div className="absolute w-[24px] h-[24px] rounded-full border-[1.5px] border-white/90 border-b-transparent border-r-transparent animate-[spin_1.5s_linear_infinite]" />
+                      </div>
+                    )}
+                    <div
+                      className="w-5 h-5 rounded-full border-2 transition-all duration-300 relative z-10"
+                      style={{
+                        borderColor: isActive ? "#FCFCF7" : "rgba(252,252,247,0.5)",
+                        backgroundColor: isActive ? "#FCFCF7" : "#36261A",
+                        boxShadow: isActive ? "0 0 15px rgba(252,252,247,0.8)" : "none",
+                      }}
+                    />
+                    <span
+                      className="font-sans text-xs md:text-sm font-bold tracking-widest uppercase mt-2"
+                      style={{ color: isActive ? "#FCFCF7" : "rgba(252,252,247,0.7)" }}
+                    >
+                      {label}
+                    </span>
+                    {isActive && (
+                      <span
+                        className="font-sans text-sm font-bold tracking-widest uppercase absolute -bottom-8"
+                        style={{ color: "#FCFCF7", textShadow: "0 0 10px rgba(252,252,247,0.5)" }}
+                      >
+                        RAIN
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
+
+        {/* ─── SEPARATOR ─────────────────────────────────────── */}
+        <div className="flex items-center gap-6 mb-16 px-4">
+          <div className="flex-1 h-[1px]" style={{ backgroundColor: "rgba(252,252,247,0.2)" }} />
+          <span className="font-sans text-sm font-bold tracking-[0.3em] uppercase" style={{ color: "#FCFCF7" }}>
+            AI INTERPRETATION
+          </span>
+          <div className="flex-1 h-[1px]" style={{ backgroundColor: "rgba(252,252,247,0.2)" }} />
+        </div>
+
+        {/* ─── AI RECOMMENDATION (HERO) ──────────────────────── */}
+        <div className="flex flex-col md:flex-row gap-8 mb-16 px-4 items-start">
+          {/* White vertical accent */}
+          <div className="w-[4px] h-32 hidden md:block rounded-full self-stretch" style={{ backgroundColor: "#FCFCF7", boxShadow: "0 0 10px rgba(252,252,247,0.3)" }} />
+
+          <div className="flex-1 border-l-4 md:border-l-0 pl-6 md:pl-0 border-white">
+            <div
+              className="font-sans text-sm md:text-base font-bold tracking-[0.3em] uppercase mb-6"
+              style={{ color: "#FCFCF7" }}
+            >
+              AI RECOMMENDATION
+            </div>
+            <h3
+              className="font-heading leading-tight"
+              style={{
+                color: "#FCFCF7",
+                fontSize: "clamp(2.5rem, 4vw, 4rem)",
+                textShadow: "0 4px 12px rgba(0,0,0,0.4)"
+              }}
+            >
+              {recLine1}
+              <br />
+              {recLine2}
+            </h3>
+          </div>
+        </div>
+
+        {/* ─── NEXT SAFE WINDOW ──────────────────────────────── */}
+        <div
+          className="flex flex-col md:flex-row md:items-center justify-between px-6 md:px-10 py-8 mb-12 rounded-xl"
+          style={{ backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(252,252,247,0.2)" }}
+        >
+          <div>
+            <div
+              className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-3"
+              style={{ color: "#FCFCF7" }}
+            >
+              NEXT SAFE WINDOW
+            </div>
+            <div className="font-sans text-4xl md:text-5xl font-medium tracking-[0.1em]" style={{ color: "#FCFCF7", textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
+              18:40 – 20:10
+            </div>
+          </div>
+          <div
+            className="mt-6 md:mt-0 font-sans text-sm md:text-base font-bold tracking-[0.2em] uppercase px-6 py-4 rounded-lg shadow-lg"
+            style={{ 
+              color: "#36261A", 
+              backgroundColor: "#FCFCF7",
+            }}
+          >
+            ~90 MIN WINDOW
+          </div>
+        </div>
+
+        {/* ─── WHY ACCORDION ─────────────────────────────────── */}
+        <div className="px-4 bg-black/10 rounded-xl border border-white/10 p-6">
+          <button
+            onClick={() => setWhyOpen(!whyOpen)}
+            className="group w-full flex justify-between items-center py-2 transition-colors"
+          >
+            <span
+              className="font-sans text-sm md:text-base font-bold tracking-[0.2em] uppercase"
+              style={{ color: "#FCFCF7" }}
+            >
+              Why this recommendation?
+            </span>
+            <span
+              className="text-2xl leading-none transition-colors"
+              style={{ color: "#FCFCF7" }}
+            >
+              {whyOpen ? "−" : "+"}
+            </span>
+          </button>
+
+          <div
+            className="overflow-hidden transition-all duration-500 ease-in-out"
+            style={{ maxHeight: whyOpen ? "250px" : "0px", opacity: whyOpen ? 1 : 0 }}
+          >
+            <p
+              className="font-sans text-base md:text-lg leading-relaxed pt-6 pb-2"
+              style={{ color: "rgba(252,252,247,0.9)" }}
+            >
+              With a <strong>{rain}% rain probability</strong> and <strong>{hum}% humidity</strong>, applying fungicide or pesticide
+              now risks it being washed off before absorption. The <strong>18:40–20:10 window</strong> offers a dry
+              spell with lower humidity and no precipitation — maximising treatment effectiveness.
+            </p>
+          </div>
+        </div>
+
       </div>
     </section>
   );

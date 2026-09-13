@@ -21,23 +21,10 @@ export default function UploadSection({ onAnalyze }) {
         { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
       );
 
-      // Compress and pass up
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-      };
-      
-      try {
-        const compressedFile = await imageCompression(file, options);
-        // We delay analysis slightly for the GSAP animation to finish feeling smooth
-        setTimeout(() => {
-          onAnalyze(compressedFile);
-        }, 1000);
-      } catch (error) {
-        console.error("Compression error:", error);
-        onAnalyze(file); 
-      }
+      // We delay analysis slightly for the GSAP animation to finish feeling smooth
+      setTimeout(() => {
+        onAnalyze(file);
+      }, 1000);
     }
   }, [onAnalyze]);
 

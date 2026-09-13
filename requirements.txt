@@ -5,3 +5,9 @@ albumentations
 wandb
 onnx
 onnxruntime
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+google-genai
+httpx

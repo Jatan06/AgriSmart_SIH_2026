@@ -95,4 +95,3 @@ venv/
 __pycache__/
 *.zip
 *.data
-*.mp4
