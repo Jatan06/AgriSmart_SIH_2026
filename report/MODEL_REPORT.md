@@ -113,9 +113,9 @@ Corn_(maize)___Cercospora_leaf_spot_Gray_leaf_spot     1.0000    0.9756    0.987
                                       weighted avg     0.9942    0.9939    0.9938     10084
 ```
 
-### 5. Baseline Comparison
-- **Organizers' Baseline (Domain Shift Difficulty):** The problem statement notes that standard baseline models (like ResNet-50) typically achieve only ~0.60 to 0.65 Macro-F1 on field-condition images due to the train-on-lab / test-on-field domain shift.
-- **Our Performance:** Our heavily augmented ConvNeXt-V2 pipeline achieved **>0.90 Macro-F1**, scoring roughly **+25% above the baseline**. According to Section 9 of the rubric, this places our AI/ML implementation firmly into the highest scoring band ("Well Above Baseline").
+### 5. Baseline Comparison (vs. Academic Research)
+- **Academic Baseline:** The paper *"PlantDoc: A Dataset for Visual Plant Disease Detection"* (Singh et al., 2020) establishes that standard lab-trained models drop to **~31%** accuracy on field images due to domain shift, and models trained directly on field data plateau near **~70%**.
+- **Our Performance:** Our heavily augmented ConvNeXt-V2 pipeline achieved a **90.94% Macro-F1**, scoring roughly **+20% above the academic baseline**.
 
 ### 6. Limitations (Honest Failure Cases)
 As required, here are the identified boundaries where the model struggles in real-world scenarios:
