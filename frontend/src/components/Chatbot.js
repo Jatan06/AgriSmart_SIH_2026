@@ -71,7 +71,11 @@ export default function Chatbot() {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FCFCF7]">
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4 bg-[#FCFCF7]"
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
