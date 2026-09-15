@@ -39,7 +39,8 @@ export default function Chatbot() {
         if (storedContext) context = JSON.parse(storedContext);
       } catch(e) {}
 
-      const response = await axios.post("http://localhost:8000/api/v1/chat", {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await axios.post(`${apiBase}/api/v1/chat`, {
         messages: [...messages, userMessage],
         context: context
       });
