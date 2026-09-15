@@ -22,13 +22,12 @@ AgriSmart_SIH_2026/
 │   │   ├── hero_video.mp4                # Background video for the hero section (LFS)
 │   │   └── ... (SVG icons)
 │   ├── src/
-│   │   ├── app/                          # Next.js App Router (page.js, layout.js, globals.css)
-│   │   ├── components/                   # React Components (HeroSection, Navbar, Chatbot, etc.)
-│   │   ├── context/                      # React Context (LanguageContext.js)
-│   │   └── lib/                          # Utilities (api.js, translations.js, mockData.js)
+│   │   ├── app/                          # Next.js App Router
+│   │   ├── components/                   # React Components
+│   │   ├── context/                      # React Context
+│   │   └── lib/                          # Utilities
 │   ├── next.config.mjs                   # Next.js configuration
-│   ├── package.json                      # Node dependencies
-│   └── ... (Tailwind & PostCSS configs)
+│   └── package.json                      # Node dependencies
 │
 ├── model/                                # Machine Learning Models & Scripts
 │   ├── agrismart_model.onnx              # Compiled ConvNeXt-V2 architecture
@@ -40,9 +39,13 @@ AgriSmart_SIH_2026/
 │   ├── model.py                          # PyTorch model definition
 │   └── train.py                          # The training loop
 │
-├── .gitattributes                        # Git LFS tracking configuration
-├── .gitignore                            # Excluded files (node_modules, venv, etc.)
+├── report/                               # Documentation and Evaluation Assets
+│   ├── assets/                           # High-res charts and logs
+│   ├── AGENTIC_WORKFLOW.md               # Details on the 5-step agent logic
+│   └── MODEL_REPORT.md                   # ML validation metrics
+│
 ├── README.md                             # Setup and run instructions
+├── PROJECT_STRUCTURE.md                  # This file
 └── requirements.txt                      # Python dependencies for the backend
 ```
 
@@ -51,5 +54,4 @@ AgriSmart_SIH_2026/
 - [ ] Does `model/agrismart_model.onnx.data` exist and is it roughly ~350MB?
 - [ ] Does `frontend/public/hero_video.mp4` exist and is it roughly ~194MB?
 - [ ] Have you created `api/.env` and added your API key?
-- [ ] Is `requirements.txt` in the root folder (not inside `/api/`)?
-- [ ] Are all the `.md` documentation files neatly organized inside `trainning_docs_agrismart/`?
+- [ ] Are all the `.md` documentation files neatly organized inside `report/`?

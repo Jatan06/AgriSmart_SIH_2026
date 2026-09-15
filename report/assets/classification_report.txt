@@ -1,34 +1,3 @@
-# Model Report: AgriSmart AI 
-*(As required by SIH 2026 Problem Statement Section 7.3)*
-
-### 1. Task Definition
-- **Objective:** Multi-class crop-disease image classification.
-- **Scale:** 70 distinct classes (covering various crops and their specific diseases, plus "healthy" variants).
-
-### 2. Dataset & Split
-- **Source:** Consolidated dataset (~4 GB raw data) merged from 3 distinct sources:
-  1. **PlantVillage:** Public domain lab-condition leaves.
-  2. **PlantDoc:** Real-world, noisy field-condition images.
-  3. **Indian Crops (Rice Leaf Disease):** Localized dataset for regional accuracy.
-- **Total Scale:** 50,420 heavily augmented images across 70 classes.
-- **Exact Split:** An honest, stratified 80/20 train/validation split (`random_state=42`).
-  - **Training Split (80%):** 40,336 images.
-  - **Validation Split (20%):** 10,084 images (stratified across all 70 classes).
-- **Data Augmentation:** To prevent lab-condition memorization, we applied `albumentations` (MotionBlur, ISONoise, RandomSunFlare).
-
-### 3. Model & Approach
-- **Architecture:** ConvNeXt-V2-Base (`convnextv2_base.fcmae_ft_in22k_in1k`).
-- **Frameworks:** PyTorch (`timm` library) for training, exported to ONNX for CPU-optimized inference.
-- **Loss Function:** Focal Loss (to handle class imbalances).
-- **Optimizer:** AdamW.
-
-### 4. Metric & Result
-- **Macro-F1 Score:** **0.9094** on the validation set.
-- **Confusion Matrix & Per-Class Precision/Recall:** 
-![Confusion Matrix Heatmap](assets/confusion_matrix_detailed.png)
-![Training vs Validation Loss & F1 Score](assets/loss_f1_curve.png)
-
-```text
 AgriSmart AI — Validation Classification Report
 ============================================================
 Total Validation Samples: 10084
@@ -111,15 +80,3 @@ Corn_(maize)___Cercospora_leaf_spot_Gray_leaf_spot     1.0000    0.9756    0.987
                                           accuracy                         0.9939     10084
                                          macro avg     0.9565    0.9488    0.9501     10084
                                       weighted avg     0.9942    0.9939    0.9938     10084
-```
-
-### 5. Baseline Comparison
-- **Organizers' Baseline (Domain Shift Difficulty):** The problem statement notes that standard baseline models (like ResNet-50) typically achieve only ~0.60 to 0.65 Macro-F1 on field-condition images due to the train-on-lab / test-on-field domain shift.
-- **Our Performance:** Our heavily augmented ConvNeXt-V2 pipeline achieved **>0.90 Macro-F1**, scoring roughly **+25% above the baseline**. According to Section 9 of the rubric, this places our AI/ML implementation firmly into the highest scoring band ("Well Above Baseline").
-
-### 6. Limitations (Honest Failure Cases)
-As required, here are the identified boundaries where the model struggles in real-world scenarios:
-1. **Co-occurring Diseases / Multi-Infection:** In a real field, a leaf may suffer from both Early Blight and Septoria Leaf Spot simultaneously. Because our classification head outputs a single-label softmax distribution, the model is forced to pick the dominant disease, masking the secondary pathogen.
-2. **Dense Field Clutter & Non-Leaf Backgrounds:** In field conditions, when soil, farmer hands, stems, or overlapping weeds dominate the camera frame, background noise can reduce prediction confidence on subtle lesions.
-3. **Severe Midday Sun Glare (Overexposure):** Direct tropical sunlight creates specular white reflections on waxy cuticles (e.g., Apple and Citrus leaves), blinding the model to early powdery mildew or subtle fungal discolorations.
-4. **Early-Stage Morphological Ambiguity:** Very early chlorosis (leaf yellowing) before distinct concentric necrotic rings develop is visually indistinguishable from simple nitrogen/nutrient deficiency.

@@ -124,9 +124,9 @@ export default function DiagnosisSection({ data, file }) {
                 {t('condition')}
               </div>
               <div className="flex items-center space-x-3">
-                <span className={`severity-dot w-3 h-3 rounded-full ${isHealthy ? 'bg-olive' : 'bg-[#A33327]'}`}></span>
+                <span className={`severity-dot w-3 h-3 rounded-full ${isHealthy ? 'bg-olive' : (data?.ml_result?.severity?.toLowerCase() === 'low' ? 'bg-[#D4B896]' : 'bg-[#A33327]')}`}></span>
                 <span className="font-sans text-sm tracking-widest uppercase text-coffee">
-                  {isHealthy ? t('optimal') : (t('high_severity') || t('infected') || "HIGH SEVERITY")}
+                  {isHealthy ? t('optimal') : `${data?.ml_result?.severity || "HIGH"} SEVERITY`}
                 </span>
               </div>
             </div>

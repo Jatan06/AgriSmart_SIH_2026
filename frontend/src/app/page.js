@@ -19,16 +19,56 @@ import TechnicalSection from "@/components/TechnicalSection";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
 
-const LoadingOverlay = () => (
-  <div className="flex flex-col items-center justify-center min-h-[50vh] bg-paper">
-    <div className="font-sans text-xs uppercase tracking-widest text-coffee/50 mb-4 animate-pulse">
-      Analyzing Field...
+const AgenticReasoningOverlay = () => {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setStep(1), 800),
+      setTimeout(() => setStep(2), 1600),
+      setTimeout(() => setStep(3), 2400),
+      setTimeout(() => setStep(4), 3200)
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const steps = [
+    "Initializing ConvNeXt-V2 Vision Model...",
+    "Scanning Leaf Morphology for Pathogens...",
+    "Fetching Live Open-Meteo Satellite Data...",
+    "Correlating Rain Probability with Runoff Risks...",
+    "AgriSmart Agent Synthesizing Weather-Aware Action Plan..."
+  ];
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] bg-paper px-6">
+      <div className="w-full max-w-lg bg-coffee/5 p-6 md:p-8 rounded-xl border border-coffee/10 shadow-sm relative overflow-hidden">
+        
+        {/* Animated scanning bar */}
+        <div className="absolute top-0 left-0 h-1 bg-olive w-1/4 animate-[slide_1.5s_ease-in-out_infinite]"></div>
+
+        <div className="font-sans text-[10px] md:text-xs uppercase tracking-[0.2em] text-coffee/40 mb-6 flex items-center">
+          <div className="w-2 h-2 bg-olive rounded-full animate-pulse mr-2"></div>
+          Agentic Reasoning Pipeline
+        </div>
+        
+        <div className="space-y-4">
+          {steps.map((text, index) => (
+            <div 
+              key={index} 
+              className={`font-sans text-xs md:text-sm tracking-wide transition-all duration-500 flex items-start space-x-3 ${
+                index <= step ? "text-coffee opacity-100 transform translate-y-0" : "text-coffee/0 opacity-0 transform translate-y-4"
+              }`}
+            >
+              <span className="text-olive font-bold mt-0.5">{index < step ? "✓" : (index === step ? "⟳" : "")}</span>
+              <span className={index === step ? "animate-pulse" : ""}>{text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
-    <div className="w-full max-w-md h-px bg-coffee/10 relative overflow-hidden">
-      <div className="absolute top-0 left-0 h-full bg-olive w-1/3 animate-[slide_1.5s_ease-in-out_infinite]"></div>
-    </div>
-  </div>
-);
+  );
+};
 
 export default function Home() {
   const { lang } = useLanguage();
@@ -110,7 +150,7 @@ export default function Home() {
           )}
 
           {appStatus === "loading" && (
-            <LoadingOverlay />
+            <AgenticReasoningOverlay />
           )}
 
           {appStatus === "error" && (
@@ -139,7 +179,7 @@ export default function Home() {
 
           <WeatherSection data={apiData} />
           <TreatmentSection data={apiData} />
-          <ImpactSection />
+          <ImpactSection data={apiData} />
           <TechnicalSection />
           <Chatbot />
         </div>
