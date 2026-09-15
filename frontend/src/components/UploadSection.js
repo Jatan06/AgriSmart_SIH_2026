@@ -9,18 +9,21 @@ import { useGSAP } from "@gsap/react";
 export default function UploadSection({ onAnalyze }) {
   const [preview, setPreview] = useState(null);
 
+  useGSAP(() => {
+    if (preview) {
+      gsap.fromTo(".image-preview", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+      );
+    }
+  }, [preview]);
+
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0];
     if (file) {
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
       
-      // GSAP smooth image reveal
-      gsap.fromTo(".image-preview", 
-        { opacity: 0, y: 20 }, 
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
-      );
-
       // We delay analysis slightly for the GSAP animation to finish feeling smooth
       setTimeout(() => {
         onAnalyze(file);

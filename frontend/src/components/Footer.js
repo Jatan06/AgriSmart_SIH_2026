@@ -20,12 +20,10 @@ export default function Footer() {
         {/* Right: Links */}
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-16 font-sans text-xs tracking-widest uppercase text-paper/50">
           <div className="flex flex-col items-center md:items-start space-y-4">
-            <a href="#" className="hover:text-paper transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-paper transition-colors">Terms of Service</a>
+            <a href="/#analyze-section" className="hover:text-paper transition-colors">Analyze</a>
           </div>
           <div className="flex flex-col items-center md:items-start space-y-4">
-            <a href="#" className="hover:text-paper transition-colors">Documentation</a>
-            <a href="#" className="hover:text-paper transition-colors">Contact</a>
+            <a href="/#how-it-works" className="hover:text-paper transition-colors">How it Works</a>
           </div>
         </div>
 

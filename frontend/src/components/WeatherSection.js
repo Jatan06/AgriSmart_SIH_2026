@@ -46,6 +46,9 @@ export default function WeatherSection({ data }) {
   const rain = weather.rain_probability ?? 86;
   const wind = weather.wind_speed ?? 14;
   const uv   = weather.uv_index ?? 3;
+  
+  const hourly = weather.hourly_forecast || [];
+  const safeWindow = weather.safe_window || null;
 
   const isHighRisk = rain > 70;
   const isMedRisk  = rain > 40;
@@ -55,10 +58,12 @@ export default function WeatherSection({ data }) {
   if (isHighRisk)  { recLine1 = "Rain imminent.";   recLine2 = "Do not apply treatment."; }
   else if (isMedRisk) { recLine1 = "Rain approaching."; recLine2 = "Apply treatment early."; }
 
+  // Find the first index where it rains so we only put rings on the most important node
+  const firstRainIndex = hourly.findIndex(h => h.rain_prob > 50);
+
   return (
     <section
       className="w-full py-16 px-6 md:px-16"
-      // Much darker brown background for maximum contrast
       style={{ backgroundColor: "#36261A", color: "#FCFCF7" }}
     >
       <div className="max-w-5xl mx-auto">
@@ -105,7 +110,7 @@ export default function WeatherSection({ data }) {
         </div>
 
         {/* ─── 6-HOUR TIMELINE ───────────────────────────────── */}
-        <div className="mb-16 px-4 bg-black/20 p-8 rounded-2xl border border-white/10">
+        <div className="mb-16 px-4 bg-black/20 pt-8 pb-14 rounded-2xl border border-white/10">
           <div
             className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-12 text-center"
             style={{ color: "#FCFCF7" }}
@@ -116,51 +121,65 @@ export default function WeatherSection({ data }) {
           <div className="relative mt-8">
             {/* Track */}
             <div
-              className="absolute top-[9px] left-0 right-0 h-[2px]"
+              className="absolute top-[6px] left-0 right-0 h-[1px]"
               style={{ backgroundColor: "rgba(252,252,247,0.3)" }}
             />
+            
             {/* Dots + Labels */}
             <div className="relative flex justify-between items-start z-10 px-2 md:px-10">
-              {["NOW", "+1H", "+2H", "+4H", "+6H"].map((label, idx) => {
-                const isActive = idx === 2;
+              {hourly.length > 0 ? hourly.map((hourData, idx) => {
+                const labels = ["NOW", "+1H", "+2H", "+3H", "+4H", "+5H"];
+                const label = labels[idx] || `+${idx}H`;
+                const isActive = hourData.rain_prob > 50; 
+                // Only show rings on the FIRST active rain event
+                const isImportant = isActive && idx === firstRainIndex;
+
                 return (
-                  <div key={label} className="flex flex-col items-center gap-4 relative group cursor-default">
-                    {/* Concentric rotating rings */}
-                    {isActive && (
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-0">
-                        {/* Outer Ring */}
-                        <div className="absolute w-[50px] h-[50px] rounded-full border-[1.5px] border-white/60 border-b-transparent border-l-transparent animate-[spin_4s_linear_infinite]" />
-                        {/* Middle Ring */}
-                        <div className="absolute w-[36px] h-[36px] rounded-full border-[1.5px] border-white/40 border-t-transparent border-r-transparent animate-[spin_2.5s_linear_infinite_reverse]" />
-                        {/* Inner Ring */}
-                        <div className="absolute w-[24px] h-[24px] rounded-full border-[1.5px] border-white/90 border-b-transparent border-r-transparent animate-[spin_1.5s_linear_infinite]" />
-                      </div>
-                    )}
-                    <div
-                      className="w-5 h-5 rounded-full border-2 transition-all duration-300 relative z-10"
-                      style={{
-                        borderColor: isActive ? "#FCFCF7" : "rgba(252,252,247,0.5)",
-                        backgroundColor: isActive ? "#FCFCF7" : "#36261A",
-                        boxShadow: isActive ? "0 0 15px rgba(252,252,247,0.8)" : "none",
-                      }}
-                    />
+                  <div key={idx} className="flex flex-col items-center gap-3 relative cursor-default">
+                    
+                    {/* Node Container — larger for important, smaller for others */}
+                    <div className={`relative flex items-center justify-center ${isImportant ? 'w-3 h-3' : 'w-1.5 h-1.5'}`}>
+                      
+                      {/* Concentric rotating rings (Only on important node) */}
+                      {isImportant && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                          <div className="absolute w-[28px] h-[28px] rounded-full border-[1.5px] border-white/60 border-b-transparent animate-[spin_4s_linear_infinite]" />
+                          <div className="absolute w-[20px] h-[20px] rounded-full border-[1.5px] border-white/60 border-t-transparent animate-[spin_2.5s_linear_infinite_reverse]" />
+                        </div>
+                      )}
+                      
+                      {/* Static Node */}
+                      <div
+                        className="rounded-full border-2 relative z-10"
+                        style={{
+                          width: isImportant ? '12px' : '6px',
+                          height: isImportant ? '12px' : '6px',
+                          borderColor: isActive ? '#FCFCF7' : 'rgba(252,252,247,0.3)',
+                          backgroundColor: isActive ? '#FCFCF7' : '#36261A',
+                        }}
+                      />
+                    </div>
+
                     <span
-                      className="font-sans text-xs md:text-sm font-bold tracking-widest uppercase mt-2"
+                      className="font-sans text-xs font-bold tracking-widest uppercase mt-2"
                       style={{ color: isActive ? "#FCFCF7" : "rgba(252,252,247,0.7)" }}
                     >
                       {label}
                     </span>
+
                     {isActive && (
                       <span
-                        className="font-sans text-sm font-bold tracking-widest uppercase absolute -bottom-8"
-                        style={{ color: "#FCFCF7", textShadow: "0 0 10px rgba(252,252,247,0.5)" }}
+                        className="font-sans text-[11px] md:text-xs font-bold tracking-widest uppercase absolute -bottom-7 w-max"
+                        style={{ color: "rgba(252,252,247,0.8)" }}
                       >
-                        RAIN
+                        {hourData.rain_prob}% RAIN
                       </span>
                     )}
                   </div>
                 );
-              })}
+              }) : (
+                <div className="text-white/50 text-sm">Weather forecast loading...</div>
+              )}
             </div>
           </div>
         </div>
@@ -177,7 +196,7 @@ export default function WeatherSection({ data }) {
         {/* ─── AI RECOMMENDATION (HERO) ──────────────────────── */}
         <div className="flex flex-col md:flex-row gap-8 mb-16 px-4 items-start">
           {/* White vertical accent */}
-          <div className="w-[4px] h-32 hidden md:block rounded-full self-stretch" style={{ backgroundColor: "#FCFCF7", boxShadow: "0 0 10px rgba(252,252,247,0.3)" }} />
+          <div className="w-[4px] h-32 hidden md:block rounded-full self-stretch" style={{ backgroundColor: "#FCFCF7" }} />
 
           <div className="flex-1 border-l-4 md:border-l-0 pl-6 md:pl-0 border-white">
             <div
@@ -191,7 +210,6 @@ export default function WeatherSection({ data }) {
               style={{
                 color: "#FCFCF7",
                 fontSize: "clamp(2.5rem, 4vw, 4rem)",
-                textShadow: "0 4px 12px rgba(0,0,0,0.4)"
               }}
             >
               {recLine1}
@@ -202,31 +220,50 @@ export default function WeatherSection({ data }) {
         </div>
 
         {/* ─── NEXT SAFE WINDOW ──────────────────────────────── */}
-        <div
-          className="flex flex-col md:flex-row md:items-center justify-between px-6 md:px-10 py-8 mb-12 rounded-xl"
-          style={{ backgroundColor: "rgba(0,0,0,0.2)", border: "1px solid rgba(252,252,247,0.2)" }}
-        >
-          <div>
-            <div
-              className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-3"
-              style={{ color: "#FCFCF7" }}
-            >
-              NEXT SAFE WINDOW
-            </div>
-            <div className="font-sans text-4xl md:text-5xl font-medium tracking-[0.1em]" style={{ color: "#FCFCF7", textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-              18:40 – 20:10
-            </div>
-          </div>
+        {safeWindow ? (
           <div
-            className="mt-6 md:mt-0 font-sans text-sm md:text-base font-bold tracking-[0.2em] uppercase px-6 py-4 rounded-lg shadow-lg"
-            style={{ 
-              color: "#36261A", 
-              backgroundColor: "#FCFCF7",
-            }}
+            className="flex flex-col md:flex-row md:items-center justify-between px-6 md:px-10 py-8 mb-12 rounded-xl"
+            style={{ backgroundColor: "rgba(0,0,0,0.15)", border: "1px solid rgba(252,252,247,0.15)" }}
           >
-            ~90 MIN WINDOW
+            <div>
+              <div
+                className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-3"
+                style={{ color: "#FCFCF7" }}
+              >
+                NEXT SAFE WINDOW
+              </div>
+              <div className="font-sans text-4xl md:text-5xl font-medium tracking-[0.1em]" style={{ color: "#FCFCF7" }}>
+                {safeWindow.start_time} – {safeWindow.end_time}
+              </div>
+            </div>
+            <div
+              className="mt-6 md:mt-0 font-sans text-sm md:text-base font-bold tracking-[0.2em] uppercase px-6 py-4 rounded-lg shadow-sm"
+              style={{ 
+                color: "#36261A", 
+                backgroundColor: "#FCFCF7",
+              }}
+            >
+              ~{safeWindow.duration_mins} MIN WINDOW
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className="flex flex-col md:flex-row md:items-center justify-between px-6 md:px-10 py-8 mb-12 rounded-xl"
+            style={{ backgroundColor: "rgba(252,252,247,0.05)", border: "1px solid rgba(252,252,247,0.15)" }}
+          >
+            <div>
+              <div
+                className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-3"
+                style={{ color: "rgba(252,252,247,0.6)" }}
+              >
+                NO CLEAR WINDOW
+              </div>
+              <div className="font-sans text-xl md:text-2xl font-medium tracking-[0.1em]" style={{ color: "#FCFCF7" }}>
+                Continuous rain expected next 72H
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ─── WHY ACCORDION ─────────────────────────────────── */}
         <div className="px-4 bg-black/10 rounded-xl border border-white/10 p-6">
@@ -257,8 +294,10 @@ export default function WeatherSection({ data }) {
               style={{ color: "rgba(252,252,247,0.9)" }}
             >
               With a <strong>{rain}% rain probability</strong> and <strong>{hum}% humidity</strong>, applying fungicide or pesticide
-              now risks it being washed off before absorption. The <strong>18:40–20:10 window</strong> offers a dry
-              spell with lower humidity and no precipitation — maximising treatment effectiveness.
+              now risks it being washed off before absorption. {safeWindow ? 
+                `The ${safeWindow.start_time}–${safeWindow.end_time} window offers a dry spell with lower humidity and no precipitation — maximising treatment effectiveness.` :
+                `Given the continuous high rain probability, applying any treatment in the next 72 hours will likely result in runoff and wasted chemicals.`
+              }
             </p>
           </div>
         </div>

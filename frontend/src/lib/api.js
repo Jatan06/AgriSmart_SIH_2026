@@ -32,7 +32,7 @@ export async function analyzeLeaf(imageFile, lat = 20.5937, lon = 78.9629, langu
   formData.append("language", language);
 
   const response = await axios.post(`${API_BASE}/api/v1/detect`, formData, {
-    timeout: 30000, // 30s timeout
+    timeout: 60000, // 60s timeout for ML inference + APIs
   });
 
   return response.data;

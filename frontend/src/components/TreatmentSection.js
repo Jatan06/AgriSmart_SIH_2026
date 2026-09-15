@@ -5,21 +5,11 @@ import { useState } from "react";
 export default function TreatmentSection({ data }) {
   const [lang, setLang] = useState("en");
 
-  // Mock treatment content
-  const plan = {
-    en: [
-      { id: "01", action: "REMOVE", desc: "Remove visibly infected leaves.", status: "✓ NOW" },
-      { id: "02", action: "WAIT", desc: "Allow the expected rain window to pass.", status: "◷ WAIT" },
-      { id: "03", action: "TREAT", desc: "Apply the recommended treatment during the next suitable dry window.", status: "→ NEXT" },
-    ],
-    gu: [
-      { id: "01", action: "દૂર કરો", desc: "દેખીતી રીતે ચેપગ્રસ્ત પાંદડા દૂર કરો.", status: "✓ હમણાં" },
-      { id: "02", action: "રાહ જુઓ", desc: "અપેક્ષિત વરસાદની બારી પસાર થવા દો.", status: "◷ રાહ જુઓ" },
-      { id: "03", action: "સારવાર", desc: "આગળની યોગ્ય સૂકી બારી દરમિયાન ભલામણ કરેલ સારવાર લાગુ કરો.", status: "→ આગળ" },
-    ]
-  };
-
-  const steps = plan[lang];
+  // Read the dual-language plan generated dynamically by Gemini
+  const plan = data?.agent_advice?.action_plan || { en: [], gu: [] };
+  
+  // Fallback to empty if loading or errored, default to English if selected lang is missing
+  const steps = plan[lang] || plan["en"] || [];
 
   return (
     <section className="w-full bg-coffee text-paper py-24 px-6 md:px-16 overflow-hidden">
@@ -58,16 +48,16 @@ export default function TreatmentSection({ data }) {
 
         {/* ACTIONS LIST */}
         <div className="w-full md:w-[80%]">
-          {steps.map((step, index) => (
+          {steps.length > 0 ? steps.map((step, index) => (
             <div 
-              key={`${lang}-${step.id}`}
+              key={`${lang}-${step.id || index}`}
               className="group border-b border-paper/10 py-10 md:py-12 flex flex-col md:grid md:grid-cols-12 gap-6 items-start md:items-center transition-transform duration-500 ease-out hover:translate-x-2"
             >
               
               {/* COLUMN 1: Number */}
               <div className="md:col-span-2">
                 <span className="font-sans text-xs tracking-widest text-paper/40">
-                  {step.id}
+                  {step.id || `0${index + 1}`}
                 </span>
               </div>
 
@@ -83,13 +73,17 @@ export default function TreatmentSection({ data }) {
 
               {/* COLUMN 3: Status */}
               <div className="md:col-span-2 md:text-right mt-4 md:mt-0">
-                <span className="font-sans text-[10px] md:text-xs tracking-widest uppercase text-olive opacity-80 group-hover:opacity-100 transition-opacity duration-500">
+                <span className="font-sans text-sm md:text-base font-semibold tracking-widest uppercase group-hover:opacity-100 transition-opacity duration-500" style={{ color: "#D4B896" }}>
                   {step.status}
                 </span>
               </div>
 
             </div>
-          ))}
+          )) : (
+            <div className="text-paper/50 italic py-12">
+              Waiting for Agronomist AI analysis...
+            </div>
+          )}
         </div>
 
         {/* TRANSITION TO NEXT SECTION */}

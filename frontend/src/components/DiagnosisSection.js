@@ -68,14 +68,16 @@ export default function DiagnosisSection({ data, file }) {
   }, { scope: containerRef, dependencies: [data] });
 
   let diseaseName = data?.ml_result?.disease_class || "Unknown Pathogen";
-  // Clean up the disease string (e.g. "Tomato_Septoria_leaf_spot" -> "Septoria Leaf Spot")
-  diseaseName = diseaseName.replace("Tomato_", "").replace(/_/g, " ");
   
-  const crop = "TOMATO"; // Mocked crop for now, would come from API in real scenario
+  // Extract crop dynamically (e.g., "Tomato_Septoria_leaf_spot" -> "TOMATO")
+  const crop = diseaseName.split("_")[0].toUpperCase();
+  
+  // Clean up the disease string
+  diseaseName = diseaseName.replace(`${crop}_`, "").replace(/_/g, " ");
   const isHealthy = diseaseName.toLowerCase().includes("healthy");
 
   return (
-    <section ref={containerRef} className="w-full bg-paper text-coffee py-12 md:py-16 px-6 md:px-16">
+    <section id="analyze" ref={containerRef} className="w-full bg-paper text-coffee py-12 md:py-16 px-6 md:px-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
         {/* LEFT: Compact Editorial Leaf Photograph */}

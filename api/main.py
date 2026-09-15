@@ -5,8 +5,14 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 
+from pydantic import BaseModel
+from typing import List, Dict
+
 from api.inference import load_model, run_inference
-from api.services import fetch_weather, generate_agent_advice
+from api.services import fetch_weather, generate_agent_advice, generate_chat_response
+
+class ChatRequest(BaseModel):
+    messages: List[Dict[str, str]]
 
 
 @asynccontextmanager
@@ -77,3 +83,13 @@ async def detect_disease(
         "weather_context": weather_data,
         "agent_advice": agent_advice,
     }
+
+
+@app.post("/api/v1/chat")
+async def chat_endpoint(request: ChatRequest):
+    """
+    Handles conversational interactions with the Agronomist AI.
+    Expects a list of messages with 'role' (user/assistant) and 'content'.
+    """
+    response_text = await generate_chat_response(request.messages)
+    return {"response": response_text}

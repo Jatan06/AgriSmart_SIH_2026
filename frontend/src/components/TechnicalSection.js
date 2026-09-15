@@ -1,9 +1,9 @@
 export default function TechnicalSection() {
   return (
-    <section className="w-full bg-paper text-coffee py-8 md:py-12 px-6 md:px-16">
+    <section id="how-it-works" className="w-full bg-paper text-coffee py-8 md:py-12 px-6 md:px-16">
       <div className="max-w-4xl mx-auto border-t border-coffee/20 pt-8">
         
-        <div className="font-sans text-[10px] tracking-[0.2em] uppercase text-coffee/50 mb-6">
+        <div className="font-sans text-xs md:text-sm tracking-[0.2em] uppercase text-coffee/50 mb-6">
           TECHNICAL EXPLANATION
         </div>
 

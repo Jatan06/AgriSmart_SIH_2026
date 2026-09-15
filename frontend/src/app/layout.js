@@ -19,6 +19,7 @@ export const metadata = {
 };
 
 import Navbar from "@/components/Navbar";
+import Chatbot from "@/components/Chatbot";
 
 export default function RootLayout({ children }) {
   return (
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
         <ReactLenis root>
           <Navbar />
           {children}
+          <Chatbot />
         </ReactLenis>
       </body>
     </html>

@@ -1,36 +1,36 @@
 export default function ImpactSection() {
   return (
-    <section className="w-full bg-paper text-coffee py-12 md:py-16 px-6 md:px-16 border-b border-coffee/10">
+    <section id="insights" className="w-full bg-paper text-coffee py-12 md:py-16 px-6 md:px-16 border-b border-coffee/10">
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
         
-        <div className="font-sans text-[10px] tracking-[0.2em] uppercase text-coffee/50 mb-4">
+        <div className="font-sans text-xs md:text-sm tracking-[0.2em] uppercase text-coffee/50 mb-4">
           ENVIRONMENTAL IMPACT
         </div>
         
-        <h2 className="font-heading text-3xl md:text-5xl leading-none text-coffee mb-10">
+        <h2 className="font-heading text-4xl md:text-6xl leading-none text-coffee mb-10">
           The lighter choice.
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mb-12">
           <div className="flex flex-col items-center">
-            <span className="font-sans text-[10px] uppercase tracking-widest text-coffee/60 mb-2">Chemical Use</span>
-            <div className="font-heading text-4xl md:text-6xl text-olive font-light">−32%</div>
+            <span className="font-sans text-xs md:text-sm uppercase tracking-widest text-coffee/60 mb-2">Chemical Use</span>
+            <div className="font-heading text-5xl md:text-7xl text-olive font-light">−32%</div>
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-sans text-[10px] uppercase tracking-widest text-coffee/60 mb-2">Water Preserved</span>
-            <div className="font-heading text-4xl md:text-6xl text-olive font-light">~420 <span className="text-3xl md:text-5xl">L</span></div>
+            <span className="font-sans text-xs md:text-sm uppercase tracking-widest text-coffee/60 mb-2">Water Preserved</span>
+            <div className="font-heading text-5xl md:text-7xl text-olive font-light">~420 <span className="text-4xl md:text-6xl">L</span></div>
           </div>
         </div>
 
         {/* Minimal Horizontal Comparison */}
         <div className="w-full max-w-2xl mx-auto text-left">
-          <div className="font-sans text-[10px] tracking-widest uppercase text-coffee/40 mb-6 text-center">
+          <div className="font-sans text-xs md:text-sm tracking-widest uppercase text-coffee/40 mb-6 text-center">
             Compared with a conventional treatment approach
           </div>
 
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between font-sans text-xs uppercase tracking-widest text-coffee/60 mb-2">
+              <div className="flex justify-between font-sans text-sm md:text-base uppercase tracking-widest text-coffee/60 mb-2">
                 <span>Conventional</span>
               </div>
               <div className="w-full bg-coffee/5 h-1">
@@ -39,7 +39,7 @@ export default function ImpactSection() {
             </div>
 
             <div>
-              <div className="flex justify-between font-sans text-xs uppercase tracking-widest text-olive mb-2">
+              <div className="flex justify-between font-sans text-sm md:text-base uppercase tracking-widest text-olive mb-2">
                 <span>AgriSmart</span>
               </div>
               <div className="w-full bg-coffee/5 h-1">
