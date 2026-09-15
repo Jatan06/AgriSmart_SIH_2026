@@ -42,6 +42,7 @@ AgriSmart_SIH_2026/
 ├── report/                               # Documentation and Evaluation Assets
 │   ├── assets/                           # High-res charts and logs
 │   ├── AGENTIC_WORKFLOW.md               # Details on the 5-step agent logic
+│   ├── LIMITATIONS.md                    # Known failure cases and edge-cases
 │   └── MODEL_REPORT.md                   # ML validation metrics
 │
 ├── README.md                             # Setup and run instructions

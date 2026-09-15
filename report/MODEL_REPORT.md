@@ -118,8 +118,6 @@ Corn_(maize)___Cercospora_leaf_spot_Gray_leaf_spot     1.0000    0.9756    0.987
 - **Our Performance:** Our heavily augmented ConvNeXt-V2 pipeline achieved a **90.94% Macro-F1**, scoring roughly **+20% above the academic baseline**.
 
 ### 6. Limitations (Honest Failure Cases)
-As required, here are the identified boundaries where the model struggles in real-world scenarios:
-1. **Co-occurring Diseases / Multi-Infection:** In a real field, a leaf may suffer from both Early Blight and Septoria Leaf Spot simultaneously. Because our classification head outputs a single-label softmax distribution, the model is forced to pick the dominant disease, masking the secondary pathogen.
-2. **Dense Field Clutter & Non-Leaf Backgrounds:** In field conditions, when soil, farmer hands, stems, or overlapping weeds dominate the camera frame, background noise can reduce prediction confidence on subtle lesions.
-3. **Severe Midday Sun Glare (Overexposure):** Direct tropical sunlight creates specular white reflections on waxy cuticles (e.g., Apple and Citrus leaves), blinding the model to early powdery mildew or subtle fungal discolorations.
-4. **Early-Stage Morphological Ambiguity:** Very early chlorosis (leaf yellowing) before distinct concentric necrotic rings develop is visually indistinguishable from simple nitrogen/nutrient deficiency.
+As required, the identified boundaries where the model struggles in real-world scenarios (co-occurring diseases, field clutter, sun glare, and early-stage ambiguity) have been detailed in a dedicated section. 
+
+👉 **View the full limitations here:** [`LIMITATIONS.md`](LIMITATIONS.md)

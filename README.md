@@ -181,11 +181,9 @@ AgriSmart AI is engineered with a focus on high performance, cost-efficiency, an
 6. **Frontend Experience (Next.js, Shadcn UI & PWA):** The frontend is a **Next.js 14** application configured as a Progressive Web App (PWA) using `next-pwa`, allowing farmers to install it on mobile devices. The UI is built using **Tailwind CSS** and **Shadcn UI** components (including `react-dropzone` for image uploads). GSAP (GreenSock) is utilized for high-performance micro-animations and layout transitions.
 
 ### Known Limitations (Honest Assessment)
-As per the rubric, we have identified the following real-world boundaries where our model degrades:
-1. **Co-occurring Diseases / Multi-Infection:** In a real field, a leaf may suffer from both Early Blight and Septoria simultaneously. Because our classification head outputs a single-label softmax distribution, the model picks the dominant disease, masking the secondary pathogen.
-2. **Dense Field Clutter:** When soil, farmer hands, stems, or overlapping weeds dominate the camera frame, background noise can reduce prediction confidence on subtle lesions.
-3. **Severe Midday Sun Glare:** Direct tropical sunlight creates specular white reflections on waxy cuticles, occasionally blinding the model to early powdery mildew.
-4. **Early-Stage Morphological Ambiguity:** Very early chlorosis (yellowing) before distinct rings develop is visually indistinguishable from simple nutrient deficiency.
+As per the rubric, we have identified the real-world boundaries where our model degrades (co-occurring diseases, field clutter, sun glare, and early-stage ambiguity). 
+
+👉 **View the full limitations here:** [`report/LIMITATIONS.md`](report/LIMITATIONS.md)
 
 ---
 
