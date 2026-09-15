@@ -83,9 +83,9 @@ async def fetch_weather(lat: float, lon: float) -> dict:
     }
 
 
-# --- Gemini Agronomist AI ---
+# --- LLM Agentic Agronomist ---
 
-GEMINI_SYSTEM_PROMPT = """You are an expert agronomist AI. Given a crop disease and weather data,
+LLM_SYSTEM_PROMPT = """You are an expert agronomist AI. Given a crop disease and weather data,
 respond ONLY with a valid JSON object matching this exact schema — no extra text:
 {
   "action_plan": {
@@ -113,7 +113,7 @@ respond ONLY with a valid JSON object matching this exact schema — no extra te
 }
 CRITICAL: You MUST provide EXACTLY 3 steps in 'en', 'gu', and 'hi' arrays."""
 
-def get_gemini_fallback(disease_class: str) -> dict:
+def get_llm_fallback(disease_class: str) -> dict:
     disease_name = disease_class.split("___")[-1].replace("_", " ") if "___" in disease_class else disease_class
     
     if "healthy" in disease_name.lower():
@@ -194,7 +194,7 @@ async def generate_agent_advice(
         response = client.chat.completions.create(
             model="qwen/qwen3.8-27b",
             messages=[
-                {"role": "system", "content": GEMINI_SYSTEM_PROMPT},
+                {"role": "system", "content": LLM_SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.3,
@@ -215,7 +215,7 @@ async def generate_agent_advice(
 
     except Exception as e:
         print(f"[services] Groq call failed: {e}")
-        return get_gemini_fallback(disease_data.get('disease_class', 'the disease'))
+        return get_llm_fallback(disease_data.get('disease_class', 'the disease'))
 
 async def generate_chat_response(messages: list, context: dict = None) -> str:
     """

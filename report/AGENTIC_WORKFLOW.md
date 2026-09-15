@@ -28,7 +28,7 @@ When a farmer uploads an image, the FastAPI backend orchestrates a complex, non-
 ### Step 4: LLM Synthesis & Prompt Injection (Groq API)
 - **Action:** The system dynamically constructs a highly constrained system prompt.
 - **Context Injected:** It feeds the Groq/Qwen 27B model the disease name, confidence score, exact temperature, humidity, rain probability, and the safe spraying window.
-- **Constraint:** The model is strictly instructed via `GEMINI_SYSTEM_PROMPT` to output *only* a valid JSON object matching a specific Pydantic-style schema, with absolutely no conversational filler.
+- **Constraint:** The model is strictly instructed via `LLM_SYSTEM_PROMPT` to output *only* a valid JSON object matching a specific Pydantic-style schema, with absolutely no conversational filler.
 
 ### Step 5: Multi-lingual Action Plan Generation (Bonus E)
 - **Action:** The LLM generates the final payload.
@@ -55,7 +55,7 @@ To ensure the system is robust enough for actual rural Indian farm conditions, w
 
 ### Edge Case 2: API Timeout / Rural Network Failure
 **The Problem:** Rural cellular networks frequently drop connections. Furthermore, third-party LLM APIs can rate-limit or timeout. If the LLM fails, the farmer still desperately needs a treatment plan.
-**The Solution:** We implemented a bulletproof fallback mechanism in `get_gemini_fallback()`. If the LLM API call fails for *any* reason, the backend catches the `Exception` and instantly returns a pre-computed, safe, static 3-step action plan for the specific disease in all 3 languages. **The core product will never crash due to an LLM timeout.**
+**The Solution:** We implemented a bulletproof fallback mechanism in `get_llm_fallback()`. If the LLM API call fails for *any* reason, the backend catches the `Exception` and instantly returns a pre-computed, safe, static 3-step action plan for the specific disease in all 3 languages. **The core product will never crash due to an LLM timeout.**
 
 ### Edge Case 3: LLM Hallucination of JSON Formatting
 **The Problem:** Generative AI models occasionally hallucinate by wrapping JSON in markdown tags (e.g., ` ```json ... ``` `) or adding conversational filler ("Here is your plan:"). This instantly breaks standard frontend JSON parsers (`JSON.parse`).
