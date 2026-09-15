@@ -4,33 +4,36 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { useLanguage } from "@/context/LanguageContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const FEATURES = [
-  {
-    num: "01",
-    title: "Instant Pathology",
-    desc: "A simple photograph transforms into a comprehensive diagnosis. Our intelligence identifies subtle patterns in leaf pathology instantly, catching distress before it becomes devastation.",
-  },
-  {
-    num: "02",
-    title: "Local Micro-Climate",
-    desc: "Diseases don't exist in a vacuum. We dynamically cross-reference local atmospheric conditions and predictive weather patterns to understand exactly why a vulnerability emerged.",
-  },
-  {
-    num: "03",
-    title: "Curated Treatment",
-    desc: "Actionable, precise, and entirely localized. Receive meticulously tailored chemical and organic recovery regimens, translated and delivered seamlessly in your native dialect.",
-  },
-  {
-    num: "04",
-    title: "Ecological Impact",
-    desc: "Farming in harmony with the earth. By treating only what needs treating, we dramatically reduce chemical runoff and water waste, fostering a sustainable agricultural legacy.",
-  }
-];
-
 export default function FeaturesTimeline() {
+  const { t } = useLanguage();
+
+  const FEATURES = [
+    {
+      num: "01",
+      title: t('feat1_title'),
+      desc: t('feat1_desc'),
+    },
+    {
+      num: "02",
+      title: t('feat2_title'),
+      desc: t('feat2_desc'),
+    },
+    {
+      num: "03",
+      title: t('feat3_title'),
+      desc: t('feat3_desc'),
+    },
+    {
+      num: "04",
+      title: t('feat4_title'),
+      desc: t('feat4_desc'),
+    }
+  ];
+
   const sectionRef = useRef(null);
   const lineRef = useRef(null);
   
@@ -99,7 +102,7 @@ export default function FeaturesTimeline() {
         {/* Massive Editorial Title */}
         <div className="mb-32 md:mb-48 relative z-10 border-b border-[#1C1C13]/10 pb-12">
           <h2 className="font-heading text-[clamp(4rem,9vw,9rem)] leading-[0.9] tracking-tight font-light text-[#1C1C13]">
-            What We Do.
+            {t('what_we_do')}
           </h2>
         </div>
 

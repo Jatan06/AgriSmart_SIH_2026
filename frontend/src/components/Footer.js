@@ -1,4 +1,7 @@
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer className="w-full bg-coffee text-paper py-16 px-6 md:px-16 border-t border-paper/10">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
@@ -20,18 +23,18 @@ export default function Footer() {
         {/* Right: Links */}
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-16 font-sans text-xs tracking-widest uppercase text-paper/50">
           <div className="flex flex-col items-center md:items-start space-y-4">
-            <a href="/#analyze-section" className="hover:text-paper transition-colors">Analyze</a>
+            <a href="/#analyze-section" className="hover:text-paper transition-colors">{t('analyze')}</a>
           </div>
           <div className="flex flex-col items-center md:items-start space-y-4">
-            <a href="/#how-it-works" className="hover:text-paper transition-colors">How it Works</a>
+            <a href="/#how-it-works" className="hover:text-paper transition-colors">{t('how_it_works')}</a>
           </div>
         </div>
 
       </div>
 
       <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-paper/10 flex justify-between items-center font-sans text-[10px] tracking-widest uppercase text-paper/30">
-        <span>&copy; {new Date().getFullYear()} AGRISMART. All rights reserved.</span>
-        <span>SIH 2026</span>
+        <span>&copy; {new Date().getFullYear()} AGRISMART. {t('all_rights_reserved')}</span>
+        <span>{t('sih_2026')}</span>
       </div>
     </footer>
   );

@@ -19,6 +19,7 @@ export const metadata = {
 };
 
 import Navbar from "@/components/Navbar";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export default function RootLayout({ children }) {
   return (
@@ -28,8 +29,10 @@ export default function RootLayout({ children }) {
     >
       <body className="flex flex-col font-sans">
         <ReactLenis root>
-          <Navbar />
-          {children}
+          <LanguageProvider>
+            <Navbar />
+            {children}
+          </LanguageProvider>
         </ReactLenis>
       </body>
     </html>

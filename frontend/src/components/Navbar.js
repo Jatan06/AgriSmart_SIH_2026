@@ -6,35 +6,17 @@ import { Menu } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { useLanguage } from "@/context/LanguageContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Navbar() {
+  const { lang, toggleLanguage, t } = useLanguage();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAnalysisMode, setIsAnalysisMode] = useState(false);
 
   useEffect(() => {
-    // Initialize Google Translate
-    var addScript = document.createElement("script");
-    addScript.setAttribute(
-      "src",
-      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-    );
-    document.body.appendChild(addScript);
-
-    window.googleTranslateElementInit = () => {
-      if (window.google && window.google.translate) {
-        new window.google.translate.TranslateElement(
-          {
-            pageLanguage: "en",
-            includedLanguages: "en,gu,hi",
-            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          },
-          "google_translate_element"
-        );
-      }
-    };
-
     const handleScroll = () => {
       // Change color after scrolling past a portion of the hero (e.g., 100px)
       if (window.scrollY > 100) {
@@ -93,19 +75,30 @@ export default function Navbar() {
           <>
             <a href="/" className="hover:opacity-60 transition-opacity flex items-center gap-2 border border-[#1C1C13]/20 px-4 py-2 rounded hover:bg-[#1C1C13]/5">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Analyze New Leaf
+              {t('analyze_new_leaf')}
             </a>
-            <a href="#analyze" className="hover:opacity-60 transition-opacity">Diagnosis</a>
-            <a href="#weather" className="hover:opacity-60 transition-opacity">Weather</a>
-            <a href="#treatment" className="hover:opacity-60 transition-opacity">Action Plan</a>
+            <a href="#analyze" className="hover:opacity-60 transition-opacity">{t('diagnosis')}</a>
+            <a href="#weather" className="hover:opacity-60 transition-opacity">{t('weather')}</a>
+            <a href="#treatment" className="hover:opacity-60 transition-opacity">{t('action_plan')}</a>
           </>
         ) : (
           <>
-            <a href="/#analyze-section" className="hover:opacity-60 transition-opacity">Analyze</a>
-            <a href="/#how-it-works" className="hover:opacity-60 transition-opacity">How it Works</a>
+            <a href="/#analyze-section" className="hover:opacity-60 transition-opacity">{t('analyze')}</a>
+            <a href="/#how-it-works" className="hover:opacity-60 transition-opacity">{t('how_it_works')}</a>
           </>
         )}
-        <div id="google_translate_element" className="ml-4 -mt-1 scale-90 origin-right opacity-80 hover:opacity-100 transition-opacity"></div>
+        
+        {/* Native Language Toggle */}
+        <button 
+          onClick={toggleLanguage}
+          className={`ml-4 px-3 py-1.5 rounded text-[10px] md:text-xs font-bold transition-all border ${
+            isScrolled || isAnalysisMode
+              ? "border-coffee/20 hover:bg-coffee hover:text-paper" 
+              : "border-white/30 hover:bg-white hover:text-coffee"
+          }`}
+        >
+          {lang === 'en' ? 'HI' : lang === 'hi' ? 'GU' : 'EN'}
+        </button>
       </div>
 
     </nav>

@@ -4,10 +4,12 @@ import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { useLanguage } from "@/context/LanguageContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function DiagnosisSection({ data, file }) {
+  const { t } = useLanguage();
   const containerRef = useRef(null);
   const confidenceRef = useRef(null);
   const [objectUrl, setObjectUrl] = useState(null);
@@ -95,7 +97,7 @@ export default function DiagnosisSection({ data, file }) {
           {/* Minimal metadata overlay */}
           <div className="absolute -left-6 md:-left-12 top-1/2 -translate-y-1/2 -rotate-90 origin-center hidden md:block">
             <span className="font-sans text-[10px] tracking-[0.3em] uppercase text-coffee/40">
-              FIELD ANALYSIS &middot; VISION DATA
+              {t('field_analysis_vision_data') || "FIELD ANALYSIS \u00b7 VISION DATA"}
             </span>
           </div>
         </div>
@@ -103,7 +105,7 @@ export default function DiagnosisSection({ data, file }) {
         {/* RIGHT: Diagnosis Result */}
         <div className="lg:col-span-8 flex flex-col justify-center">
           <div className="diag-element font-sans text-[10px] tracking-[0.2em] uppercase text-coffee/50 mb-6">
-            AI FIELD ANALYSIS
+            {t('ai_field_analysis')}
           </div>
 
           <div className="diag-element font-sans text-xs tracking-widest uppercase text-coffee mb-2">
@@ -119,12 +121,12 @@ export default function DiagnosisSection({ data, file }) {
             {/* Severity */}
             <div>
               <div className="font-sans text-[10px] tracking-widest uppercase text-coffee/50 mb-3">
-                Condition
+                {t('condition')}
               </div>
               <div className="flex items-center space-x-3">
                 <span className={`severity-dot w-3 h-3 rounded-full ${isHealthy ? 'bg-olive' : 'bg-[#A33327]'}`}></span>
                 <span className="font-sans text-sm tracking-widest uppercase text-coffee">
-                  {isHealthy ? "OPTIMAL" : "HIGH SEVERITY"}
+                  {isHealthy ? t('optimal') : (t('high_severity') || t('infected') || "HIGH SEVERITY")}
                 </span>
               </div>
             </div>
@@ -132,7 +134,7 @@ export default function DiagnosisSection({ data, file }) {
             {/* Confidence */}
             <div>
               <div className="font-sans text-[10px] tracking-widest uppercase text-coffee/50 mb-3">
-                Diagnostic Confidence
+                {t('diagnostic_confidence')}
               </div>
               <div className="font-sans text-4xl font-light text-coffee flex items-baseline">
                 <span ref={confidenceRef}>0.0%</span>

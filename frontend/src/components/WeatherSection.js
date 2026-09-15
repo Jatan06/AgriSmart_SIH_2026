@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 // Animated bar — pure CSS transition, thicker and brighter
 function StatBar({ value, max = 100 }) {
@@ -38,6 +39,7 @@ function CountUp({ target, suffix = "", decimals = 0 }) {
 }
 
 export default function WeatherSection({ data }) {
+  const { t } = useLanguage();
   const [whyOpen, setWhyOpen] = useState(false);
 
   const weather = data?.weather_context || {};
@@ -55,10 +57,10 @@ export default function WeatherSection({ data }) {
   const isHighRisk = maxRainNext6H > 70;
   const isMedRisk  = maxRainNext6H > 40;
 
-  let recLine1 = "Conditions are clear.";
-  let recLine2 = "Safe to apply treatment.";
-  if (isHighRisk)  { recLine1 = "Rain expected soon.";   recLine2 = "Do not apply treatment."; }
-  else if (isMedRisk) { recLine1 = "Rain approaching."; recLine2 = "Delay treatment if possible."; }
+  let recLine1 = t('rec_clear');
+  let recLine2 = t('rec_safe');
+  if (isHighRisk)  { recLine1 = t('rec_rain_soon');   recLine2 = t('rec_do_not_apply'); }
+  else if (isMedRisk) { recLine1 = t('rec_rain_approach'); recLine2 = t('rec_delay'); }
 
   // Find the first index where it rains so we only put rings on the most important node
   const firstRainIndex = hourly.findIndex(h => h.rain_prob > 50);
@@ -76,15 +78,15 @@ export default function WeatherSection({ data }) {
           className="font-sans text-sm md:text-base font-bold tracking-[0.3em] uppercase mb-12"
           style={{ color: "#FCFCF7", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}
         >
-          FIELD CONDITIONS
+          {t('field_conditions')}
         </div>
 
         {/* ─── PRIMARY WEATHER STATS ─────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 mb-6 md:border-t md:border-b" style={{ borderColor: "rgba(252,252,247,0.2)" }}>
           {[
-            { label: "TEMPERATURE", value: temp, suffix: "°C" },
-            { label: "HUMIDITY",    value: hum,  suffix: "%" },
-            { label: "RAIN PROBABILITY", value: rain, suffix: "%" },
+            { label: t('temperature'), value: temp, suffix: "°C" },
+            { label: t('humidity'),    value: hum,  suffix: "%" },
+            { label: t('rain_probability'), value: rain, suffix: "%" },
           ].map((item, i) => (
             <div
               key={item.label}
@@ -107,9 +109,9 @@ export default function WeatherSection({ data }) {
 
         {/* ─── SECONDARY STATS ───────────────────────────────── */}
         <div className="flex gap-8 mb-16 px-4" style={{ color: "#FCFCF7" }}>
-          <span className="font-sans text-sm font-medium tracking-widest uppercase">WIND {wind} km/h</span>
+          <span className="font-sans text-sm font-medium tracking-widest uppercase">{t('wind')} {wind} km/h</span>
           <span style={{ color: "rgba(252,252,247,0.5)" }}>·</span>
-          <span className="font-sans text-sm font-medium tracking-widest uppercase">UV INDEX {uv}</span>
+          <span className="font-sans text-sm font-medium tracking-widest uppercase">{t('uv_index')} {uv}</span>
         </div>
 
         {/* ─── 6-HOUR TIMELINE ───────────────────────────────── */}
@@ -118,7 +120,7 @@ export default function WeatherSection({ data }) {
             className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-12 text-center"
             style={{ color: "#FCFCF7" }}
           >
-            6-HOUR OUTLOOK
+            {t('6_hour_outlook')}
           </div>
 
           <div className="relative mt-8">
@@ -131,8 +133,7 @@ export default function WeatherSection({ data }) {
             {/* Dots + Labels */}
             <div className="relative flex justify-between items-start z-10 px-2 md:px-10">
               {hourly.length > 0 ? hourly.map((hourData, idx) => {
-                const labels = ["NOW", "+1H", "+2H", "+3H", "+4H", "+5H"];
-                const label = labels[idx] || `+${idx}H`;
+                const label = idx === 0 ? t('now') : `+${idx}H`;
                 const isActive = hourData.rain_prob > 50; 
                 // Only show rings on the FIRST active rain event
                 const isImportant = isActive && idx === firstRainIndex;
@@ -175,7 +176,7 @@ export default function WeatherSection({ data }) {
                         className="font-sans text-[11px] md:text-xs font-bold tracking-widest uppercase absolute -bottom-7 w-max"
                         style={{ color: "rgba(252,252,247,0.8)" }}
                       >
-                        {hourData.rain_prob}% RAIN
+                        {hourData.rain_prob}% {t('rain')}
                       </span>
                     )}
                   </div>
@@ -192,24 +193,24 @@ export default function WeatherSection({ data }) {
               <span className="text-[#D4B896] mt-0.5">✦</span>
               <p className="font-sans text-sm md:text-base text-white/80 font-light">
                 {maxRainNext6H > 40 
-                  ? `Rain is expected in the next 6 hours (up to ${maxRainNext6H}% probability).` 
-                  : "No significant rain expected in the next 6 hours."}
+                  ? t('insight_rain_exp', { maxRain: maxRainNext6H })
+                  : t('insight_no_rain')}
               </p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-[#D4B896] mt-0.5">✦</span>
               <p className="font-sans text-sm md:text-base text-white/80 font-light">
                 {wind > 20 
-                  ? "Wind speeds are high. Chemical sprays may drift away from crops."
-                  : "Wind conditions are stable and safe for spraying."}
+                  ? t('insight_high_wind')
+                  : t('insight_safe_wind')}
               </p>
             </div>
             <div className="flex items-start gap-3">
               <span className="text-[#D4B896] mt-0.5">✦</span>
               <p className="font-sans text-sm md:text-base text-white/80 font-light">
                 {safeWindow 
-                  ? `The optimal time to treat your crops is during the upcoming ${safeWindow.duration_mins}-minute dry window.`
-                  : "There is no safe dry window to apply treatments right now. Wait for better weather."}
+                  ? t('insight_safe_window', { duration: safeWindow.duration_mins })
+                  : t('insight_no_window')}
               </p>
             </div>
           </div>
@@ -219,7 +220,7 @@ export default function WeatherSection({ data }) {
         <div className="flex items-center gap-6 mb-16 px-4">
           <div className="flex-1 h-[1px]" style={{ backgroundColor: "rgba(252,252,247,0.2)" }} />
           <span className="font-sans text-sm font-bold tracking-[0.3em] uppercase" style={{ color: "#FCFCF7" }}>
-            AI INTERPRETATION
+            {t('ai_interpretation')}
           </span>
           <div className="flex-1 h-[1px]" style={{ backgroundColor: "rgba(252,252,247,0.2)" }} />
         </div>
@@ -234,7 +235,7 @@ export default function WeatherSection({ data }) {
               className="font-sans text-sm md:text-base font-bold tracking-[0.3em] uppercase mb-6"
               style={{ color: "#FCFCF7" }}
             >
-              AI RECOMMENDATION
+              {t('ai_recommendation')}
             </div>
             <h3
               className="font-heading leading-tight"
@@ -261,7 +262,7 @@ export default function WeatherSection({ data }) {
                 className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-3"
                 style={{ color: "#FCFCF7" }}
               >
-                NEXT SAFE WINDOW
+                {t('next_safe_window')}
               </div>
               <div className="font-sans text-4xl md:text-5xl font-medium tracking-[0.1em]" style={{ color: "#FCFCF7" }}>
                 {safeWindow.start_time} – {safeWindow.end_time}
@@ -274,7 +275,7 @@ export default function WeatherSection({ data }) {
                 backgroundColor: "#FCFCF7",
               }}
             >
-              ~{safeWindow.duration_mins} MIN WINDOW
+              {t('min_window', { duration: safeWindow.duration_mins })}
             </div>
           </div>
         ) : (
@@ -287,10 +288,10 @@ export default function WeatherSection({ data }) {
                 className="font-sans text-sm font-bold tracking-[0.3em] uppercase mb-3"
                 style={{ color: "rgba(252,252,247,0.6)" }}
               >
-                NO CLEAR WINDOW
+                {t('no_clear_window')}
               </div>
               <div className="font-sans text-xl md:text-2xl font-medium tracking-[0.1em]" style={{ color: "#FCFCF7" }}>
-                Continuous rain expected next 72H
+                {t('continuous_rain')}
               </div>
             </div>
           </div>
@@ -306,7 +307,7 @@ export default function WeatherSection({ data }) {
               className="font-sans text-sm md:text-base font-bold tracking-[0.2em] uppercase"
               style={{ color: "#FCFCF7" }}
             >
-              Why this recommendation?
+              {t('why_recommendation')}
             </span>
             <span
               className="text-2xl leading-none transition-colors"
@@ -324,10 +325,9 @@ export default function WeatherSection({ data }) {
               className="font-sans text-base md:text-lg leading-relaxed pt-6 pb-2"
               style={{ color: "rgba(252,252,247,0.9)" }}
             >
-              With a <strong>{rain}% rain probability</strong> and <strong>{hum}% humidity</strong>, applying fungicide or pesticide
-              now risks it being washed off before absorption. {safeWindow ? 
-                `The ${safeWindow.start_time}–${safeWindow.end_time} window offers a dry spell with lower humidity and no precipitation — maximising treatment effectiveness.` :
-                `Given the continuous high rain probability, applying any treatment in the next 72 hours will likely result in runoff and wasted chemicals.`
+              {t('why_text_1')} <strong>{rain}% {t('why_text_2')}</strong> {t('why_text_3')} <strong>{hum}% {t('why_text_4')}</strong>, {t('why_text_5')} {safeWindow ? 
+                t('why_safe_window', { start: safeWindow.start_time, end: safeWindow.end_time }) :
+                t('why_no_window')
               }
             </p>
           </div>

@@ -5,8 +5,10 @@ import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function UploadSection({ onAnalyze }) {
+  const { t } = useLanguage();
   const [preview, setPreview] = useState(null);
 
   useGSAP(() => {
@@ -47,10 +49,10 @@ export default function UploadSection({ onAnalyze }) {
         {/* Editorial Heading */}
         <div className="mb-12 text-center md:text-left">
           <h2 className="font-heading text-[clamp(3rem,6vw,5rem)] leading-none mb-4 font-light">
-            Analyze your crop.
+            {t('analyze_heading')}
           </h2>
           <p className="font-sans text-base md:text-lg font-light text-coffee/70 max-w-lg">
-            Upload a clear photograph of a crop leaf to begin a detailed field analysis.
+            {t('analyze_subheading')}
           </p>
         </div>
 
@@ -76,10 +78,10 @@ export default function UploadSection({ onAnalyze }) {
               </svg>
               
               <span className="font-sans text-xs tracking-[0.2em] uppercase text-coffee/60 mb-2">
-                Drop Leaf Image
+                {t('drop_leaf_image')}
               </span>
               <span className="font-heading text-2xl md:text-3xl text-coffee/40 group-hover:text-coffee transition-colors duration-500">
-                {isDragActive ? "Release to analyze" : "Click or drag anywhere"}
+                {isDragActive ? t('release_to_analyze') : t('click_or_drag')}
               </span>
 
               <div className="absolute bottom-4 left-4 font-sans text-[10px] tracking-widest uppercase text-coffee/40">
@@ -99,10 +101,10 @@ export default function UploadSection({ onAnalyze }) {
               <div className="absolute inset-0 bg-coffee/10 mix-blend-multiply"></div>
               
               <div className="absolute top-8 left-8 font-sans text-xs tracking-widest uppercase text-paper bg-coffee/80 px-4 py-2">
-                Field Analysis
+                {t('field_analysis_badge')}
               </div>
               <div className="absolute top-8 right-8 font-sans text-xs tracking-widest uppercase text-paper bg-coffee/80 px-4 py-2">
-                AI Vision
+                {t('ai_vision_badge')}
               </div>
             </div>
           )}

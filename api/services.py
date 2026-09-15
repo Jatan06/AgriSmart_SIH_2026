@@ -98,6 +98,11 @@ respond ONLY with a valid JSON object matching this exact schema — no extra te
       {"id": "01", "action": "string (Gujarati)", "desc": "string (Gujarati)", "status": "string (Gujarati equivalent of '✓ NOW' etc)"},
       {"id": "02", "action": "string", "desc": "string", "status": "string"},
       {"id": "03", "action": "string", "desc": "string", "status": "string"}
+    ],
+    "hi": [
+      {"id": "01", "action": "string (Hindi)", "desc": "string (Hindi)", "status": "string (Hindi equivalent of '✓ NOW' etc)"},
+      {"id": "02", "action": "string", "desc": "string", "status": "string"},
+      {"id": "03", "action": "string", "desc": "string", "status": "string"}
     ]
   },
   "sustainability_impact": {
@@ -106,7 +111,7 @@ respond ONLY with a valid JSON object matching this exact schema — no extra te
     "methodology_note": "string"
   }
 }
-CRITICAL: You MUST provide EXACTLY 3 steps in both 'en' and 'gu' arrays."""
+CRITICAL: You MUST provide EXACTLY 3 steps in 'en', 'gu', and 'hi' arrays."""
 
 def get_gemini_fallback(disease_class: str) -> dict:
     disease_name = disease_class.split("___")[-1].replace("_", " ") if "___" in disease_class else disease_class
@@ -123,6 +128,11 @@ def get_gemini_fallback(disease_class: str) -> dict:
                     {"id": "01", "action": "જાળવી રાખો", "desc": "વર્તમાન પાણી અને પોષણ શેડ્યૂલ ચાલુ રાખો.", "status": "✓ હમણાં"},
                     {"id": "02", "action": "નિરીક્ષણ કરો", "desc": "કોઈપણ ફોલ્લીઓ અથવા પીળા પડવાના ચિહ્નો માટે સાપ્તાહિક પાંદડા તપાસો.", "status": "◷ ચાલુ"},
                     {"id": "03", "action": "અટકાવો", "desc": "હવાના પરિભ્રમણ માટે યોગ્ય જગ્યા સુનિશ્ચિત કરો.", "status": "→ આગળ"}
+                ],
+                "hi": [
+                    {"id": "01", "action": "बनाए रखें", "desc": "वर्तमान पानी और पोषण अनुसूची जारी रखें।", "status": "✓ अभी"},
+                    {"id": "02", "action": "निगरानी करें", "desc": "धब्बों या पीलेपन के किसी भी लक्षण के लिए साप्ताहिक पत्तियों की जांच करें।", "status": "◷ जारी"},
+                    {"id": "03", "action": "रोकें", "desc": "हवा के संचलन के लिए उचित स्थान सुनिश्चित करें।", "status": "→ आगे"}
                 ]
             },
             "sustainability_impact": {
@@ -143,6 +153,11 @@ def get_gemini_fallback(disease_class: str) -> dict:
                 {"id": "01", "action": "દૂર કરો", "desc": f"ચેપગ્રસ્ત પાંદડા દૂર કરો જે {disease_name} ના ચિહ્નો દર્શાવે છે.", "status": "✓ હમણાં"},
                 {"id": "02", "action": "રાહ જુઓ", "desc": "રાસાયણિક પ્રવાહને રોકવા માટે વરસાદની બારી પસાર થવા દો.", "status": "◷ રાહ જુઓ"},
                 {"id": "03", "action": "સારવાર", "desc": f"{disease_name} ની સારવાર માટે ફૂગનાશક અથવા લીમડાના તેલનો ઉપયોગ કરો.", "status": "→ આગળ"}
+            ],
+            "hi": [
+                {"id": "01", "action": "हटाएं", "desc": f"संक्रमित पत्तियों को हटा दें जो {disease_name} के लक्षण दिखा रही हैं।", "status": "✓ अभी"},
+                {"id": "02", "action": "प्रतीक्षा करें", "desc": "रासायनिक बहाव को रोकने के लिए बारिश की खिड़की को गुजरने दें।", "status": "◷ प्रतीक्षा करें"},
+                {"id": "03", "action": "उपचार", "desc": f"{disease_name} के उपचार के लिए फफूंदनाशक या नीम के तेल का उपयोग करें।", "status": "→ आगे"}
             ]
         },
         "sustainability_impact": {

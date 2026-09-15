@@ -5,10 +5,10 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight } from "lucide-react";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function HeroSection() {
+  const { t } = useLanguage();
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const contentRef = useRef(null);
@@ -102,7 +102,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden flex items-center justify-center bg-black">
         <video 
           ref={videoRef}
-          src="/background.mp4" 
+          src="/hero_video.mp4" 
           autoPlay 
           muted 
           loop 
@@ -120,14 +120,14 @@ export default function HeroSection() {
         className="relative z-10 h-full flex flex-col justify-center px-6 md:px-16 max-w-5xl"
       >
         <h1 className="hero-element font-sans text-[clamp(4rem,8vw,9rem)] leading-[1.1] tracking-tight text-[#FCFCF7] mb-8 font-light max-w-4xl flex flex-col items-start">
-          <span>Precision agriculture,</span>
+          <span>{t('hero_title_1')}</span>
           <span className="mt-2">
-            guided by <span className="italic text-[#DBC8B7]">intelligence.</span>
+            {t('hero_title_2')}<span className="italic text-[#DBC8B7]">{t('hero_title_2_italic')}</span>
           </span>
         </h1>
         
         <p className="hero-element font-sans text-base md:text-xl font-light text-[#FCFCF7]/80 max-w-md leading-relaxed mb-12">
-          Visual intelligence meets local field conditions to determine exactly what your crop needs next.
+          {t('hero_subtitle')}
         </p>
 
         <div className="hero-element">
@@ -135,10 +135,15 @@ export default function HeroSection() {
             onClick={() => document.getElementById('analyze-section')?.scrollIntoView({ behavior: 'smooth' })}
             className="group flex items-center space-x-3 text-[#FCFCF7] hover:text-[#919166] transition-colors duration-300 font-sans text-xs uppercase tracking-widest"
           >
-            <span className="border-b border-[#FCFCF7]/30 group-hover:border-[#919166] pb-1 transition-colors">Analyze Your Crop</span>
+            <span className="border-b border-[#FCFCF7]/30 group-hover:border-[#919166] pb-1 transition-colors">{t('analyze_your_crop')}</span>
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-2 transition-transform" />
           </button>
         </div>
+      </div>
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-10 hero-element opacity-80 animate-bounce">
+        <div className="w-1 h-1 bg-[#FCFCF7] rounded-full mb-3"></div>
+        <span className="font-sans text-[10px] uppercase tracking-[0.3em] text-[#FCFCF7]">{t('scroll')}</span>
       </div>
       
     </section>

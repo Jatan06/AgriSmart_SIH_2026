@@ -6,6 +6,7 @@ import { MOCK_API_RESPONSE } from "@/lib/mockData";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/LanguageContext";
 
 import HeroSection from "@/components/HeroSection";
 import FeaturesTimeline from "@/components/FeaturesTimeline";
@@ -30,6 +31,7 @@ const LoadingOverlay = () => (
 );
 
 export default function Home() {
+  const { lang } = useLanguage();
   const [file, setFile] = useState(null); 
   const [appStatus, setAppStatus] = useState("idle"); // idle, loading, success, error
   const [apiData, setApiData] = useState(null);
@@ -64,7 +66,7 @@ export default function Home() {
       }
 
       // Call the actual FastAPI backend
-      const data = await analyzeLeaf(selectedFile, lat, lon, "en");
+      const data = await analyzeLeaf(selectedFile, lat, lon, lang);
 
       if (!data?.success || !data?.ml_result) {
         throw new Error("Invalid response shape from server.");
