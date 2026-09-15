@@ -40,15 +40,6 @@ AgriSmart_SIH_2026/
 │   ├── model.py                          # PyTorch model definition
 │   └── train.py                          # The training loop
 │
-├── trainning_docs_agrismart/             # Documentation and Architecture Plans
-│   ├── AI_SYSTEM_PROMPT.md
-│   ├── BACKEND_IMPLEMENTATION_PLAN.md
-│   ├── FRONTEND_IMPLEMENTATION_PLAN.md
-│   ├── KAGGLE_ML_RUNBOOK.md
-│   ├── SYSTEM_ARCHITECTURE_MEGA_DOC.md
-│   ├── training_logs_run1.txt
-│   └── ... (other markdown docs)
-│
 ├── .gitattributes                        # Git LFS tracking configuration
 ├── .gitignore                            # Excluded files (node_modules, venv, etc.)
 ├── README.md                             # Setup and run instructions
