@@ -1,4 +1,4 @@
-# AgriSmart AI [SIH 2026 - C-433]
+# AgriSmart AI [SIH 2026 - C-433] | Team Brute Force
 
 AgriSmart AI is an intelligent crop diagnosis and autonomous advisory platform. It analyzes crop leaf images, cross-references live weather conditions, and generates an actionable, localized treatment plan to help farmers make sustainable decisions.
 
@@ -36,9 +36,9 @@ The following technical documents provide detailed implementation specifics:
 - Accurately classifies diseases from field-condition leaf images.
 - Achieves blazing-fast CPU inference via `onnxruntime` on the backend.
 
-### ✅ Bonus Module C: Weather-Based Intelligence
-- Integrates live weather and 72-hour forecasts from **Open-Meteo**.
-- The AI autonomously adjusts its treatment advice based on rain probability (e.g., delaying chemical sprays to prevent runoff).
+### ✅ Bonus Module C: Weather-Based Intelligence (Major Innovation)
+- Integrates a massive array of live environmental data from **Open-Meteo**, explicitly calculating the impact of **Temperature, Relative Humidity, 10m Wind Speed, UV Index, and a 72-hour precipitation probability matrix**.
+- **Our Unique Edge:** Standard agricultural tools only look at the leaf. Our Agentic AI synthesizes the visual disease with the specific *wind speed* (to prevent chemical drift), *UV Index* (to prevent leaf burn from certain treatments), and *humidity* (to predict fungal spreading rates). It autonomously adjusts its treatment advice based on this entire holistic matrix, rather than just rain probability.
 
 ### ✅ Bonus Module D: Sustainability Score
 - Dynamically computes and displays the **exact liters of water saved** and **chemical reduction percentage**.

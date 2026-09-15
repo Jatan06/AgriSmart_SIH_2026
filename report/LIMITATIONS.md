@@ -1,4 +1,4 @@
-# AgriSmart AI - Known Limitations & Failure Cases
+# AgriSmart AI - Known Limitations & Failure Cases (Team Brute Force)
 
 *(As required by SIH 2026 Problem Statement Section 7.3: Honest failure cases)*
 

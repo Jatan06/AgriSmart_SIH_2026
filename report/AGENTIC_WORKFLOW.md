@@ -1,4 +1,4 @@
-# Detailed Agentic Workflow & Weather Intelligence
+# Detailed Agentic Workflow & Weather Intelligence (Team Brute Force)
 *(SIH 2026 - Comprehensive Breakdown of Bonus Modules C, E, and G)*
 
 While the core machine learning model (ConvNeXt-V2) excels at diagnosing the disease, AgriSmart AI sets itself apart by employing a fully autonomous, multi-step **Agentic Workflow**. This backend pipeline acts as a digital agronomist, synthesizing the visual diagnosis with live environmental data to produce actionable, hyper-localized advice.

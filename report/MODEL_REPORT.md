@@ -1,4 +1,4 @@
-# Model Report: AgriSmart AI 
+# Model Report: AgriSmart AI (Team Brute Force) 
 *(As required by SIH 2026 Problem Statement Section 7.3)*
 
 ### 1. Task Definition

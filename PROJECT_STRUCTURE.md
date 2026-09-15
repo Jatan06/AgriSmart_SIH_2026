@@ -1,4 +1,4 @@
-# AgriSmart AI - Project Structure Verification
+# AgriSmart AI - Project Structure Verification (Team Brute Force)
 
 Use this file to verify that your local repository matches the exact structure required for the project to run successfully. 
 
