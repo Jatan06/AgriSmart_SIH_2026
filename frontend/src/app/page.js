@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { analyzeLeaf } from "@/lib/api";
 import { MOCK_API_RESPONSE } from "@/lib/mockData";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -16,6 +16,7 @@ import TreatmentSection from "@/components/TreatmentSection";
 import ImpactSection from "@/components/ImpactSection";
 import TechnicalSection from "@/components/TechnicalSection";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 
 const LoadingOverlay = () => (
   <div className="flex flex-col items-center justify-center min-h-[50vh] bg-paper">
@@ -33,6 +34,12 @@ export default function Home() {
   const [appStatus, setAppStatus] = useState("idle"); // idle, loading, success, error
   const [apiData, setApiData] = useState(null);
   const [apiError, setApiError] = useState(null);
+
+  useEffect(() => {
+    if (appStatus === "success") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [appStatus]);
 
   const handleAnalyze = async (selectedFile) => {
     setFile(selectedFile);
@@ -65,6 +72,9 @@ export default function Home() {
 
       setApiData(data);
       setAppStatus("success");
+      
+      // Save context for the global Chatbot
+      sessionStorage.setItem("agriSmartContext", JSON.stringify(data));
     } catch (err) {
       setApiError("Failed to connect to the AI engine.");
       setAppStatus("error");
@@ -76,6 +86,7 @@ export default function Home() {
     setApiData(null);
     setApiError(null);
     setAppStatus("idle");
+    sessionStorage.removeItem("agriSmartContext");
   };
 
   return (
@@ -128,6 +139,7 @@ export default function Home() {
           <TreatmentSection data={apiData} />
           <ImpactSection />
           <TechnicalSection />
+          <Chatbot />
         </div>
       )}
       

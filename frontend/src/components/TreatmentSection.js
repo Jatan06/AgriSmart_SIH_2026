@@ -12,7 +12,7 @@ export default function TreatmentSection({ data }) {
   const steps = plan[lang] || plan["en"] || [];
 
   return (
-    <section className="w-full bg-coffee text-paper py-24 px-6 md:px-16 overflow-hidden">
+    <section id="treatment" className="w-full bg-coffee text-paper py-24 px-6 md:px-16 overflow-hidden">
       {/* Wider editorial max-width (1280px-1400px) */}
       <div className="max-w-[1300px] mx-auto">
         
@@ -20,7 +20,7 @@ export default function TreatmentSection({ data }) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 border-b border-paper/10 pb-8">
           
           <div>
-            <div className="font-sans text-xs tracking-[0.12em] uppercase text-paper/60 mb-4">
+            <div className="font-sans text-sm tracking-[0.12em] uppercase mb-4" style={{ color: "#D4B896" }}>
               ACTION PLAN
             </div>
             <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl text-paper">
@@ -56,7 +56,7 @@ export default function TreatmentSection({ data }) {
               
               {/* COLUMN 1: Number */}
               <div className="md:col-span-2">
-                <span className="font-sans text-xs tracking-widest text-paper/40">
+                <span className="font-sans text-base md:text-lg tracking-widest" style={{ color: "#D4B896" }}>
                   {step.id || `0${index + 1}`}
                 </span>
               </div>

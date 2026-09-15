@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,9 +32,16 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      // Send entire message history for context
+      // Send entire message history and active context if available
+      let context = null;
+      try {
+        const storedContext = sessionStorage.getItem("agriSmartContext");
+        if (storedContext) context = JSON.parse(storedContext);
+      } catch(e) {}
+
       const response = await axios.post("http://localhost:8000/api/v1/chat", {
         messages: [...messages, userMessage],
+        context: context
       });
 
       const botMessage = { role: "assistant", content: response.data.response };
@@ -67,13 +75,23 @@ export default function Chatbot() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                  className={`max-w-[85%] p-3.5 rounded-2xl text-sm ${
                     msg.role === "user"
                       ? "bg-olive text-white rounded-br-none"
                       : "bg-earth/20 text-coffee rounded-bl-none"
                   }`}
                 >
-                  {msg.content}
+                  <div className={`flex flex-col gap-2 ${msg.role === "user" ? "text-white" : "text-coffee"}`}>
+                    <ReactMarkdown 
+                      components={{
+                        p: ({node, ...props}) => <p className="m-0 leading-relaxed" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-4 m-0 space-y-1" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-bold" {...props} />
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             ))}

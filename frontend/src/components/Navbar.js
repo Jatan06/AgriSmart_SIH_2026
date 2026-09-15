@@ -10,15 +10,31 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Navbar() {
-  const [language, setLanguage] = useState("en");
-
-  const toggleLanguage = () => {
-    setLanguage(language === "en" ? "gu" : "en");
-  };
-
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAnalysisMode, setIsAnalysisMode] = useState(false);
 
   useEffect(() => {
+    // Initialize Google Translate
+    var addScript = document.createElement("script");
+    addScript.setAttribute(
+      "src",
+      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+    );
+    document.body.appendChild(addScript);
+
+    window.googleTranslateElementInit = () => {
+      if (window.google && window.google.translate) {
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: "en",
+            includedLanguages: "en,gu,hi",
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          },
+          "google_translate_element"
+        );
+      }
+    };
+
     const handleScroll = () => {
       // Change color after scrolling past a portion of the hero (e.g., 100px)
       if (window.scrollY > 100) {
@@ -28,19 +44,31 @@ export default function Navbar() {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const checkMode = () => {
+      // If we can find the diagnosis section, we are on the results page
+      const analyzeSection = document.getElementById("analyze");
+      setIsAnalysisMode(!!analyzeSection);
+    };
 
-  useGSAP(() => {
-    // GSAP is no longer used for navbar toggling to avoid DOMTokenList errors.
+    window.addEventListener("scroll", handleScroll);
+    
+    // Observer to detect when Diagnosis section is mounted
+    const observer = new MutationObserver(checkMode);
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    checkMode();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   return (
     <nav 
       id="main-navbar"
       className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 flex justify-between items-center px-6 md:px-12 h-20 md:h-24 ${
-        isScrolled 
+        isScrolled || isAnalysisMode
           ? "bg-[#FCFCF7]/95 backdrop-blur-md shadow-sm text-[#1C1C13]" 
           : "bg-transparent text-white"
       }`}
@@ -61,8 +89,23 @@ export default function Navbar() {
       </a>
       
       <div className="hidden md:flex items-center space-x-8 font-sans text-xs uppercase tracking-widest pointer-events-auto">
-        <a href="/#analyze-section" className="hover:opacity-60 transition-opacity">Analyze</a>
-        <a href="/#how-it-works" className="hover:opacity-60 transition-opacity">How it Works</a>
+        {isAnalysisMode ? (
+          <>
+            <a href="/" className="hover:opacity-60 transition-opacity flex items-center gap-2 border border-[#1C1C13]/20 px-4 py-2 rounded hover:bg-[#1C1C13]/5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Analyze New Leaf
+            </a>
+            <a href="#analyze" className="hover:opacity-60 transition-opacity">Diagnosis</a>
+            <a href="#weather" className="hover:opacity-60 transition-opacity">Weather</a>
+            <a href="#treatment" className="hover:opacity-60 transition-opacity">Action Plan</a>
+          </>
+        ) : (
+          <>
+            <a href="/#analyze-section" className="hover:opacity-60 transition-opacity">Analyze</a>
+            <a href="/#how-it-works" className="hover:opacity-60 transition-opacity">How it Works</a>
+          </>
+        )}
+        <div id="google_translate_element" className="ml-4 -mt-1 scale-90 origin-right opacity-80 hover:opacity-100 transition-opacity"></div>
       </div>
 
     </nav>

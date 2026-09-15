@@ -6,13 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from api.inference import load_model, run_inference
 from api.services import fetch_weather, generate_agent_advice, generate_chat_response
 
 class ChatRequest(BaseModel):
     messages: List[Dict[str, str]]
+    context: Optional[dict] = None
 
 
 @asynccontextmanager
@@ -89,7 +90,7 @@ async def detect_disease(
 async def chat_endpoint(request: ChatRequest):
     """
     Handles conversational interactions with the Agronomist AI.
-    Expects a list of messages with 'role' (user/assistant) and 'content'.
+    Expects a list of messages with 'role' (user/assistant) and 'content', plus an optional context dictionary.
     """
-    response_text = await generate_chat_response(request.messages)
+    response_text = await generate_chat_response(request.messages, request.context)
     return {"response": response_text}

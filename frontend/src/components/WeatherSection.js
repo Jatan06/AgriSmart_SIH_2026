@@ -50,19 +50,22 @@ export default function WeatherSection({ data }) {
   const hourly = weather.hourly_forecast || [];
   const safeWindow = weather.safe_window || null;
 
-  const isHighRisk = rain > 70;
-  const isMedRisk  = rain > 40;
+  // Evaluate risk by looking ahead at the next 6 hours, not just this exact minute
+  const maxRainNext6H = hourly.length > 0 ? Math.max(...hourly.map(h => h.rain_prob)) : rain;
+  const isHighRisk = maxRainNext6H > 70;
+  const isMedRisk  = maxRainNext6H > 40;
 
   let recLine1 = "Conditions are clear.";
-  let recLine2 = "Treat now.";
-  if (isHighRisk)  { recLine1 = "Rain imminent.";   recLine2 = "Do not apply treatment."; }
-  else if (isMedRisk) { recLine1 = "Rain approaching."; recLine2 = "Apply treatment early."; }
+  let recLine2 = "Safe to apply treatment.";
+  if (isHighRisk)  { recLine1 = "Rain expected soon.";   recLine2 = "Do not apply treatment."; }
+  else if (isMedRisk) { recLine1 = "Rain approaching."; recLine2 = "Delay treatment if possible."; }
 
   // Find the first index where it rains so we only put rings on the most important node
   const firstRainIndex = hourly.findIndex(h => h.rain_prob > 50);
 
   return (
     <section
+      id="weather"
       className="w-full py-16 px-6 md:px-16"
       style={{ backgroundColor: "#36261A", color: "#FCFCF7" }}
     >
@@ -121,7 +124,7 @@ export default function WeatherSection({ data }) {
           <div className="relative mt-8">
             {/* Track */}
             <div
-              className="absolute top-[6px] left-0 right-0 h-[1px]"
+              className="absolute top-[8px] left-0 right-0 h-[1px]"
               style={{ backgroundColor: "rgba(252,252,247,0.3)" }}
             />
             
@@ -137,8 +140,8 @@ export default function WeatherSection({ data }) {
                 return (
                   <div key={idx} className="flex flex-col items-center gap-3 relative cursor-default">
                     
-                    {/* Node Container — larger for important, smaller for others */}
-                    <div className={`relative flex items-center justify-center ${isImportant ? 'w-3 h-3' : 'w-1.5 h-1.5'}`}>
+                    {/* Node Container — fixed size so centers align perfectly on the track */}
+                    <div className="relative flex items-center justify-center w-4 h-4">
                       
                       {/* Concentric rotating rings (Only on important node) */}
                       {isImportant && (
@@ -180,6 +183,34 @@ export default function WeatherSection({ data }) {
               }) : (
                 <div className="text-white/50 text-sm">Weather forecast loading...</div>
               )}
+            </div>
+          </div>
+
+          {/* Quick Insights List (Actionable takeaways for farmers) */}
+          <div className="mt-12 px-4 md:px-10 flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <span className="text-[#D4B896] mt-0.5">✦</span>
+              <p className="font-sans text-sm md:text-base text-white/80 font-light">
+                {maxRainNext6H > 40 
+                  ? `Rain is expected in the next 6 hours (up to ${maxRainNext6H}% probability).` 
+                  : "No significant rain expected in the next 6 hours."}
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-[#D4B896] mt-0.5">✦</span>
+              <p className="font-sans text-sm md:text-base text-white/80 font-light">
+                {wind > 20 
+                  ? "Wind speeds are high. Chemical sprays may drift away from crops."
+                  : "Wind conditions are stable and safe for spraying."}
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-[#D4B896] mt-0.5">✦</span>
+              <p className="font-sans text-sm md:text-base text-white/80 font-light">
+                {safeWindow 
+                  ? `The optimal time to treat your crops is during the upcoming ${safeWindow.duration_mins}-minute dry window.`
+                  : "There is no safe dry window to apply treatments right now. Wait for better weather."}
+              </p>
             </div>
           </div>
         </div>

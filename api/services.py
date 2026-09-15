@@ -111,6 +111,27 @@ CRITICAL: You MUST provide EXACTLY 3 steps in both 'en' and 'gu' arrays."""
 def get_gemini_fallback(disease_class: str) -> dict:
     disease_name = disease_class.split("___")[-1].replace("_", " ") if "___" in disease_class else disease_class
     
+    if "healthy" in disease_name.lower():
+        return {
+            "action_plan": {
+                "en": [
+                    {"id": "01", "action": "MAINTAIN", "desc": "Continue current watering and nutrition schedule.", "status": "✓ NOW"},
+                    {"id": "02", "action": "MONITOR", "desc": "Check leaves weekly for any signs of spots or yellowing.", "status": "◷ ONGOING"},
+                    {"id": "03", "action": "PREVENT", "desc": "Ensure proper spacing for air circulation.", "status": "→ NEXT"}
+                ],
+                "gu": [
+                    {"id": "01", "action": "જાળવી રાખો", "desc": "વર્તમાન પાણી અને પોષણ શેડ્યૂલ ચાલુ રાખો.", "status": "✓ હમણાં"},
+                    {"id": "02", "action": "નિરીક્ષણ કરો", "desc": "કોઈપણ ફોલ્લીઓ અથવા પીળા પડવાના ચિહ્નો માટે સાપ્તાહિક પાંદડા તપાસો.", "status": "◷ ચાલુ"},
+                    {"id": "03", "action": "અટકાવો", "desc": "હવાના પરિભ્રમણ માટે યોગ્ય જગ્યા સુનિશ્ચિત કરો.", "status": "→ આગળ"}
+                ]
+            },
+            "sustainability_impact": {
+                "water_saved_liters_per_acre": 0,
+                "chemical_reduction_percent": 100,
+                "methodology_note": "Crop is healthy. No chemical treatment required."
+            }
+        }
+        
     return {
         "action_plan": {
             "en": [
@@ -162,31 +183,52 @@ async def generate_agent_advice(
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.3,
+            max_tokens=800,
         )
 
         text = response.choices[0].message.content.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-            text = text.rsplit("```", 1)[0].strip()
-            if text.startswith("json"):
-                text = text[4:].strip()
-        return json.loads(text)
+        
+        # Robustly extract JSON block in case the model outputs conversational text
+        start_idx = text.find("{")
+        end_idx = text.rfind("}")
+        if start_idx != -1 and end_idx != -1:
+            json_str = text[start_idx:end_idx+1]
+        else:
+            json_str = text
+            
+        return json.loads(json_str)
 
     except Exception as e:
         print(f"[services] Groq call failed: {e}")
         return get_gemini_fallback(disease_data.get('disease_class', 'the disease'))
 
-async def generate_chat_response(messages: list) -> str:
+async def generate_chat_response(messages: list, context: dict = None) -> str:
     """
-    Calls Groq LLM with conversation history for the chatbot.
+    Calls Groq LLM with conversation history for the chatbot, injecting live analysis context.
     """
     try:
         from groq import Groq
         client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         
+        system_prompt = "You are an expert AgriSmart Agronomist. Provide concise, scientific, and practical farming advice. Keep responses brief and helpful."
+        
+        if context:
+            ml = context.get('ml_result', {})
+            weather = context.get('weather_context', {})
+            plan = context.get('agent_advice', {}).get('action_plan', {}).get('en', [])
+            
+            system_prompt += (
+                f"\n\nCURRENT FIELD CONTEXT (You have access to this real-time data):\n"
+                f"- Diagnosis: {ml.get('disease_class', 'Unknown')} ({ml.get('confidence', 0)*100:.1f}% confidence)\n"
+                f"- Weather: {weather.get('temperature_c', '?')}°C, {weather.get('humidity', '?')}% humidity, "
+                f"{weather.get('rain_probability', '?')}% current rain probability.\n"
+                f"- 6-Hour Rain Forecast: {[h.get('rain_prob') for h in weather.get('hourly_forecast', [])]}%\n"
+                f"- Treatment Action Plan: {json.dumps(plan)}"
+            )
+
         # Convert frontend messages format to Groq format
         formatted_messages = [
-            {"role": "system", "content": "You are an expert AgriSmart Agronomist. Provide concise, scientific, and practical farming advice. Keep responses brief and helpful."}
+            {"role": "system", "content": system_prompt}
         ]
         for msg in messages:
             role = "assistant" if msg["role"] == "assistant" else "user"
