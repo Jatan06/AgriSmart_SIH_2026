@@ -117,7 +117,7 @@ npm run dev
 ## 📈 6. Reported Metrics (Core Model)
 
 * **Macro-Averaged F1 Score:** **0.9024 – 0.9094**
-* **Baseline Comparison:** The SIH organizers stated that a standard ResNet-50 baseline typically achieves only ~0.60 to 0.65 Macro-F1 on field-condition images due to domain shift (lab vs field). Our ConvNeXt-V2 architecture achieved **>0.90 Macro-F1**, outperforming the baseline by **+25%** and placing AgriSmart AI firmly into the highest possible scoring band ("Well Above Baseline").
+* **Baseline Comparison:** The academic paper "PlantDoc" (Singh et al., 2020) establishes that standard lab-trained models drop to ~31% accuracy on field images due to domain shift, while field-trained baseline models typically plateau near ~70%. Our ConvNeXt-V2 architecture achieved **>0.90 Macro-F1**, outperforming the academic baseline by **+20%** and placing AgriSmart AI firmly into the highest possible scoring band ("Well Above Baseline").
 
 ### Visualizing the Model
 Here is the 70-class Confusion Matrix and the Loss/F1 Progression curves for our ConvNeXt-V2 model:
@@ -173,7 +173,7 @@ graph TD
 
 AgriSmart AI is engineered with a focus on high performance, cost-efficiency, and edge-case reliability. The exact implementation utilizes the following stack:
 
-1. **Deep Learning Core (PyTorch & `timm`):** A **ConvNeXt-V2-Base** model was trained from scratch on over 50,000 images utilizing the `timm` library for the backbone architecture. The data pipeline utilizes **OpenCV (`opencv-python-headless`)** for raw image loading and `albumentations` to apply realistic image corruption during training (sun flare, ISO noise). Training metrics and loss curves were tracked using **Weights & Biases (`wandb`)**, and evaluation metrics were computed using **Scikit-Learn**.
+1. **Deep Learning Core (PyTorch & `timm`):** A **ConvNeXt-V2-Base** model was fine-tuned via transfer learning on over 50,000 images utilizing the `timm` library for the pretrained backbone architecture. The data pipeline utilizes **OpenCV (`opencv-python-headless`)** for raw image loading and `albumentations` to apply realistic image corruption during training (sun flare, ISO noise). Training metrics and loss curves were tracked using **Weights & Biases (`wandb`)**, and evaluation metrics were computed using **Scikit-Learn**.
 2. **Production Inference (ONNX & Pillow):** To avoid the high costs of GPU instances in production, the PyTorch model was exported to the `.onnx` format. On the backend, Python's **Pillow (PIL)** and **NumPy** are used to parse the multipart image upload, resize it to 224x224, and apply ImageNet mean/std normalization. It is then executed via **`onnxruntime`**, allowing the ConvNeXt model to run in **~150ms on a standard CPU**.
 3. **High-Performance API (FastAPI):** The backend is built using Python's **FastAPI**. It is completely asynchronous. FastAPI's `@asynccontextmanager` is utilized to load the ONNX model into memory strictly once during server initialization, eliminating "cold start" latency for subsequent API requests.
 4. **Agentic Engine (Groq & Pydantic):** The **Groq API** (running the Qwen 27B model) was integrated for reasoning. The integration relies on **Pydantic** to enforce a highly constrained prompt, ensuring the LLM outputs a valid, typed JSON action plan strictly in 3 regional languages (English, Hindi, Gujarati).
