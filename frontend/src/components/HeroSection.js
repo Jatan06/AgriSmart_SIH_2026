@@ -62,12 +62,24 @@ export default function HeroSection() {
         .to(contentRef.current, { y: "-20%", opacity: 0, ease: "none" }, 0)
     });
 
-    // Force video to start at 0s just in case
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-    }
-
   }, { scope: containerRef });
+
+  // Strictly enforce video clipping (starts at 18s, loops back to 18s)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.currentTime = 18;
+
+    const handleTimeUpdate = () => {
+      if (video.currentTime < 18) {
+        video.currentTime = 18;
+      }
+    };
+
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    return () => video.removeEventListener("timeupdate", handleTimeUpdate);
+  }, []);
 
   return (
     <section ref={containerRef} className="relative w-full h-screen overflow-hidden bg-[#1C1C13]">
