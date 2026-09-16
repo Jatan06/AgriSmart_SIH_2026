@@ -1,7 +1,7 @@
 import axios from "axios";
 import imageCompression from 'browser-image-compression';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 
 /**
  * Sends a leaf image with geolocation to the backend for analysis.

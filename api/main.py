@@ -32,10 +32,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: Without this, the Next.js frontend on localhost:3000 cannot talk to this server.
+# CORS: Allow requests from localhost, Render frontend, and any domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:3001"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:3001",
+        "https://agrismart-sih-2026.onrender.com",
+    ],
+    allow_origin_regex=r"^https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
