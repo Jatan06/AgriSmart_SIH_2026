@@ -1,9 +1,13 @@
+const isGithubActions = process.env.GITHUB_ACTIONS || false;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  devIndicators: {
-    appIsrStatus: false,
-    buildActivity: false,
+  output: "export",
+  images: {
+    unoptimized: true,
   },
+  basePath: isGithubActions ? "/AgriSmart_SIH_2026" : "",
+  assetPrefix: isGithubActions ? "/AgriSmart_SIH_2026" : "",
 };
 
 export default nextConfig;
